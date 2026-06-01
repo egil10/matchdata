@@ -13,6 +13,12 @@ export async function generateMetadata({ params }: { params: { id: string } }) {
   return { title: m ? `${m.homeName} – ${m.awayName}` : "Kamp" };
 }
 
+export function generateStaticParams() {
+  return db.fixtures
+    .filter((f) => f.leagueId === "eliteserien" && f.status === "played")
+    .map((f) => ({ id: f.id }));
+}
+
 export default async function MatchPage({ params }: { params: { id: string } }) {
   const m = await getMatch(params.id);
   if (!m) notFound();

@@ -9,7 +9,7 @@ import { fmt, signed } from "@/lib/format";
 import { teamImpactTier, TONE_TEXT } from "@/lib/metrics";
 import { PageHeader, Card, Avatar, Badge } from "@/components/ui/primitives";
 import { SearchInput } from "@/components/ui/controls";
-import { RadarStat } from "@/components/charts";
+import { RadarStat } from "@/components/charts-lazy";
 import { CHART } from "@/lib/colors";
 
 const ROWS: { key: keyof CPlayer | "g90"; label: string; dir: 1 | -1; d: number }[] = [

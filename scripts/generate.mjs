@@ -560,13 +560,15 @@ for (const lg of MODELED_LEAGUES) {
   const teamObjs = lg.teams.map((tm, i) => {
     const id = `${lg.id}__${slug(tm.name)}`;
     const strength = clamp(0.62 - i * 0.015 + rng.gauss(0, 0.05) - (lg.level - 1) * 0.03, 0.2, 0.85);
+    const crest = crestFor(tm.name);
     const t = {
       id, raw: tm.name, name: tm.name, short: tm.short || tm.name, slug: slug(tm.name),
       leagueId: lg.id, leagueName: lg.name, leagueShort: lg.short, level: lg.level,
       gender: lg.gender, color: lg.color, dataSource: "modeled", season: SEASON,
       city: tm.city, fylke: fylkeOf(tm.city),
-      founded: null, stadium: `${tm.city} idrettspark`, capacity: [0, 0, 0, 4200, 1800][lg.level] || 1500,
-      badge: null, desc: null, strength,
+      founded: crest.founded, stadium: crest.stadium || `${tm.city} idrettspark`,
+      capacity: crest.capacity || [0, 0, 0, 4200, 1800][lg.level] || 1500,
+      badge: crest.badge, desc: null, strength,
     };
     registerTeam(t);
     return t;

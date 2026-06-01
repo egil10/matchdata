@@ -3,13 +3,16 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Search, CornerDownLeft, Hash } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { useGender } from "@/lib/client";
 import type { Gender } from "@/lib/types";
 
 type Entry = { t: "p" | "t" | "l"; id: string; n: string; s: string; l: string; g: Gender };
 const TYPE_LABEL = { p: "Spiller", t: "Lag", l: "Liga" } as const;
 const route = (e: Entry) => (e.t === "p" ? `/spiller/${e.id}` : e.t === "t" ? `/lag/${e.id}` : `/liga/${e.id}`);
+const DV = process.env.NEXT_PUBLIC_DATA_VERSION || "1";
 
-export function CommandPalette({ gender }: { gender: Gender }) {
+export function CommandPalette() {
+  const gender = useGender();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
@@ -36,7 +39,7 @@ export function CommandPalette({ gender }: { gender: Gender }) {
 
   useEffect(() => {
     if (open && !items) {
-      fetch("/data/search.json").then((r) => r.json()).then(setItems).catch(() => setItems([]));
+      fetch(`/data/search.json?v=${DV}`, { cache: "force-cache" }).then((r) => r.json()).then(setItems).catch(() => setItems([]));
     }
     if (open) setTimeout(() => inputRef.current?.focus(), 30);
     else { setQ(""); setIdx(0); }

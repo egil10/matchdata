@@ -7,12 +7,16 @@ import { PageHeader, Card, Stat, DataBadge, Badge, Crest, Avatar } from "@/compo
 import { Tabs } from "@/components/ui/tabs";
 import { LeagueTable, ImpactTable } from "@/components/tables";
 import { ScorerRow, FixtureRow } from "@/components/widgets";
-import { ProgressionChart, GoalsPerRoundChart, DonutChart, RankBarChart } from "@/components/charts";
+import { ProgressionChart, GoalsPerRoundChart, DonutChart, RankBarChart } from "@/components/charts-lazy";
 import { CHART } from "@/lib/colors";
 
 export function generateMetadata({ params }: { params: { id: string } }) {
   const l = db.getLeague(params.id);
   return { title: l ? l.name : "Liga" };
+}
+
+export function generateStaticParams() {
+  return db.leagues.map((l) => ({ id: l.id }));
 }
 
 export default function LeaguePage({ params }: { params: { id: string } }) {

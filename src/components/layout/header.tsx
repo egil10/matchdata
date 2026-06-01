@@ -8,9 +8,10 @@ import { Logo } from "@/components/brand/logo";
 import { NAV, NAV_MORE } from "@/lib/nav";
 import { GenderToggle } from "./gender-toggle";
 import { ThemeToggle } from "./theme-toggle";
-import type { Gender } from "@/lib/types";
+import { useGender } from "@/lib/client";
 
-export function Header({ gender }: { gender: Gender }) {
+export function Header() {
+  const gender = useGender();
   const pathname = usePathname();
   const [menu, setMenu] = useState(false);
   useEffect(() => setMenu(false), [pathname]);

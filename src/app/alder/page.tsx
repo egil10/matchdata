@@ -5,7 +5,7 @@ import { usePlayers, useLeagues, useGender, type CPlayer } from "@/lib/client";
 import { fmt } from "@/lib/format";
 import { PageHeader, Card, Stat, Badge, Avatar } from "@/components/ui/primitives";
 import { Field, Select } from "@/components/ui/controls";
-import { AgeHistogram } from "@/components/charts";
+import { AgeHistogram } from "@/components/charts-lazy";
 
 const SEASON = 2024;
 

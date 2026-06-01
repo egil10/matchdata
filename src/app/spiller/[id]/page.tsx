@@ -7,7 +7,7 @@ import { fmt, signed } from "@/lib/format";
 import { teamImpactTier, TONE_TEXT, TONE_BG } from "@/lib/metrics";
 import { PageHeader, Card, Stat, DataBadge, Badge, Avatar, Meter, Tip, FormGuide } from "@/components/ui/primitives";
 import { SparkBars } from "@/components/widgets";
-import { RadarStat } from "@/components/charts";
+import { RadarStat } from "@/components/charts-lazy";
 import { CHART } from "@/lib/colors";
 import { FavButton } from "@/components/fav-button";
 
@@ -17,6 +17,11 @@ export function generateMetadata({ params }: { params: { id: string } }) {
 }
 
 const PCT_METRICS = ["Spilletid", "Starter", "Mål/90", "P/kamp", "+/−/90", "Impact"];
+
+export function generateStaticParams() {
+  // Prebuild the top flight; everyone else renders on demand and is cached.
+  return db.players.filter((p) => p.leagueId === "eliteserien").map((p) => ({ id: p.id }));
+}
 
 export default async function PlayerPage({ params }: { params: { id: string } }) {
   const player = db.getPlayer(params.id);

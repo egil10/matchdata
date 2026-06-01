@@ -7,7 +7,7 @@ import { fmt, signed } from "@/lib/format";
 import { POS_GROUP_COLOR, teamImpactTier, TONE_TEXT } from "@/lib/metrics";
 import { PageHeader, Card, Badge, Avatar } from "@/components/ui/primitives";
 import { Field, Select, Toggle } from "@/components/ui/controls";
-import { ScatterLab } from "@/components/charts";
+import { ScatterLab } from "@/components/charts-lazy";
 
 const g90 = (p: CPlayer) => (p.min ? (p.gls * 90) / p.min : 0);
 const METRICS: Record<string, { label: string; get: (p: CPlayer) => number; d: number }> = {

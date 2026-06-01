@@ -7,12 +7,16 @@ import { PageHeader, Card, Stat, DataBadge, Badge, Crest, FormGuide } from "@/co
 import { Tabs } from "@/components/ui/tabs";
 import { ImpactTable } from "@/components/tables";
 import { FixtureRow, MiniTableRow } from "@/components/widgets";
-import { ProgressionChart } from "@/components/charts";
+import { ProgressionChart } from "@/components/charts-lazy";
 import { FavButton } from "@/components/fav-button";
 
 export function generateMetadata({ params }: { params: { id: string } }) {
   const t = db.getTeam(params.id);
   return { title: t ? t.name : "Lag" };
+}
+
+export function generateStaticParams() {
+  return db.teams.map((t) => ({ id: t.id }));
 }
 
 export default function TeamPage({ params }: { params: { id: string } }) {

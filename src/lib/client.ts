@@ -30,12 +30,19 @@ export interface CFixture {
 
 const cache: Record<string, any> = {};
 const inflight: Record<string, Promise<any>> = {};
+const V = process.env.NEXT_PUBLIC_DATA_VERSION || "1";
 
 function useJson<T>(url: string): T | null {
   const [data, setData] = useState<T | null>(cache[url] ?? null);
   useEffect(() => {
     if (cache[url]) { setData(cache[url]); return; }
-    if (!inflight[url]) inflight[url] = fetch(url).then((r) => r.json()).then((d) => (cache[url] = d));
+    if (!inflight[url]) {
+      // Versioned URL + force-cache: downloads once, then served from the
+      // HTTP cache forever (busts only when the data version changes).
+      inflight[url] = fetch(`${url}?v=${V}`, { cache: "force-cache" })
+        .then((r) => r.json())
+        .then((d) => (cache[url] = d));
+    }
     let alive = true;
     inflight[url].then((d) => alive && setData(d));
     return () => { alive = false; };
