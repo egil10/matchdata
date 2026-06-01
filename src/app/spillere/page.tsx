@@ -34,10 +34,14 @@ export default function SpillerePage() {
   const [pos, setPos] = useState("all");
   const [natOnly, setNatOnly] = useState(false);
   const [minMin, setMinMin] = useState(0);
+  const dMinMin = useDebounced(minMin, 120);
   const [sort, setSort] = useState<{ key: SortKey; dir: "asc" | "desc" }>({ key: "tiv", dir: "desc" });
 
   const pool = useMemo(() => (players || []).filter((p) => p.g === gender), [players, gender]);
-  const leaguesG = useMemo(() => (leagues || []).filter((l) => l.gender === gender), [leagues, gender]);
+  const leaguesG = useMemo(
+    () => (leagues || []).filter((l) => l.gender === gender).sort((a, b) => a.name.localeCompare(b.name, "nb")),
+    [leagues, gender],
+  );
   const fylker = useMemo(() => [...new Set(pool.map((p) => p.fy))].sort((a, b) => a.localeCompare(b, "nb")), [pool]);
   const years = useMemo(() => [...new Set(pool.map((p) => p.by))].sort((a, b) => b - a), [pool]);
 
@@ -50,7 +54,7 @@ export default function SpillerePage() {
       (by === "all" || p.by === +by) &&
       (pos === "all" || p.pg === pos) &&
       (!natOnly || p.nat === 1) &&
-      p.min >= minMin);
+      p.min >= dMinMin);
     const f = SORT_VAL[sort.key];
     r = [...r].sort((a, b) => {
       const av = f(a), bv = f(b);
@@ -58,7 +62,7 @@ export default function SpillerePage() {
       return sort.dir === "asc" ? c : -c;
     });
     return r;
-  }, [pool, dq, league, fylke, by, pos, natOnly, minMin, sort]);
+  }, [pool, dq, league, fylke, by, pos, natOnly, dMinMin, sort]);
 
   function toggleSort(key: SortKey) {
     setSort((s) => (s.key === key ? { key, dir: s.dir === "asc" ? "desc" : "asc" } : { key, dir: key === "n" || key === "ts" ? "asc" : "desc" }));

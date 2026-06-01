@@ -2,11 +2,12 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { ExternalLink } from "lucide-react";
-import { usePlayers, useLeagues, useGender, type CPlayer } from "@/lib/client";
+import { usePlayers, useLeagues, useGender, useDebounced, type CPlayer } from "@/lib/client";
 import { fmt, signed } from "@/lib/format";
-import { POS_GROUP_COLOR, teamImpactTier, TONE_TEXT } from "@/lib/metrics";
+import { pearson } from "@/lib/stats";
+import { POS_GROUP_COLOR } from "@/lib/metrics";
 import { PageHeader, Card, Badge, Avatar } from "@/components/ui/primitives";
-import { Field, Select, Toggle } from "@/components/ui/controls";
+import { Field, Select, Segmented, Toggle } from "@/components/ui/controls";
 import { ScatterLab } from "@/components/charts-lazy";
 
 const g90 = (p: CPlayer) => (p.min ? (p.gls * 90) / p.min : 0);
@@ -19,7 +20,14 @@ const METRICS: Record<string, { label: string; get: (p: CPlayer) => number; d: n
   ppg: { label: "Poeng/kamp", get: (p) => p.ppg, d: 2 },
   age: { label: "Alder", get: (p) => p.age, d: 0 },
   st: { label: "Starter", get: (p) => p.st, d: 0 },
+  k: { label: "Kamper", get: (p) => p.k, d: 0 },
+  caps: { label: "Landskamper", get: (p) => p.caps, d: 0 },
+  cards: { label: "Kort (gult+rødt)", get: (p) => p.y + p.r, d: 0 },
+  mpg: { label: "Minutter/kamp", get: (p) => (p.k ? p.min / p.k : 0), d: 0 },
 };
+const METRIC_OPTS = Object.entries(METRICS)
+  .map(([k, m]) => ({ value: k, label: m.label }))
+  .sort((a, b) => a.label.localeCompare(b.label, "nb"));
 const PRESETS: { label: string; x: string; y: string }[] = [
   { label: "Spilletid vs Impact", x: "min", y: "tiv" },
   { label: "Alder vs Impact", x: "age", y: "tiv" },
@@ -35,15 +43,20 @@ export default function UtforskPage() {
   const [y, setY] = useState("tiv");
   const [league, setLeague] = useState("all");
   const [minMin, setMinMin] = useState(270);
+  const dMinMin = useDebounced(minMin, 120);
   const [colorByLeague, setColorByLeague] = useState(false);
+  const [trend, setTrend] = useState(true);
   const [sel, setSel] = useState<string | null>(null);
 
-  const leaguesG = useMemo(() => (leagues || []).filter((l) => l.gender === gender), [leagues, gender]);
+  const leaguesG = useMemo(
+    () => (leagues || []).filter((l) => l.gender === gender).sort((a, b) => a.name.localeCompare(b.name, "nb")),
+    [leagues, gender],
+  );
   const leagueColor = useMemo(() => Object.fromEntries((leagues || []).map((l) => [l.id, l.color])), [leagues]);
 
   const pool = useMemo(
-    () => (players || []).filter((p) => p.g === gender && (league === "all" || p.lg === league) && p.min >= minMin && (x !== "tiv" && y !== "tiv" ? true : p.q === 1)),
-    [players, gender, league, minMin, x, y],
+    () => (players || []).filter((p) => p.g === gender && (league === "all" || p.lg === league) && p.min >= dMinMin && (x !== "tiv" && y !== "tiv" ? true : p.q === 1)),
+    [players, gender, league, dMinMin, x, y],
   );
 
   const points = useMemo(() => {
@@ -58,6 +71,7 @@ export default function UtforskPage() {
 
   const xRef = points.length ? points.reduce((s, p) => s + p.x, 0) / points.length : undefined;
   const yRef = points.length ? points.reduce((s, p) => s + p.y, 0) / points.length : undefined;
+  const r = useMemo(() => pearson(points.map((p) => p.x), points.map((p) => p.y)), [points]);
   const selected = sel ? (players || []).find((p) => p.id === sel) : null;
 
   return (
@@ -81,20 +95,30 @@ export default function UtforskPage() {
       </div>
 
       <div className="mb-4 grid gap-3 rounded-xl border border-border bg-card p-4 sm:grid-cols-2 lg:grid-cols-5">
-        <Field label="X-akse"><Select value={x} onChange={setX} options={Object.entries(METRICS).map(([k, m]) => ({ value: k, label: m.label }))} /></Field>
-        <Field label="Y-akse"><Select value={y} onChange={setY} options={Object.entries(METRICS).map(([k, m]) => ({ value: k, label: m.label }))} /></Field>
-        <Field label="Liga"><Select value={league} onChange={setLeague} options={[{ value: "all", label: "Alle" }, ...leaguesG.map((l) => ({ value: l.id, label: l.name }))]} /></Field>
+        <Field label="X-akse"><Select value={x} onChange={setX} options={METRIC_OPTS} searchable /></Field>
+        <Field label="Y-akse"><Select value={y} onChange={setY} options={METRIC_OPTS} searchable /></Field>
+        <Field label="Liga"><Select value={league} onChange={setLeague} options={[{ value: "all", label: "Alle ligaer" }, ...leaguesG.map((l) => ({ value: l.id, label: l.name }))]} /></Field>
         <Field label={`Min. spilletid: ${minMin}`}><input type="range" min={0} max={2000} step={90} value={minMin} onChange={(e) => setMinMin(+e.target.value)} className="h-9 w-full accent-[hsl(var(--primary))]" /></Field>
-        <div className="flex items-end"><Toggle checked={colorByLeague} onChange={setColorByLeague} label={colorByLeague ? "Farge: Liga" : "Farge: Posisjon"} /></div>
+        <Field label="Fargelegg etter">
+          <Segmented
+            value={colorByLeague ? "league" : "pos"}
+            onChange={(v) => setColorByLeague(v === "league")}
+            options={[{ value: "pos", label: "Posisjon" }, { value: "league", label: "Liga" }]}
+          />
+        </Field>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
         <Card className="p-4 lg:col-span-2">
-          <div className="mb-1 flex items-center justify-between">
+          <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
             <p className="text-sm font-medium">{METRICS[x].label} <span className="text-muted-foreground">vs</span> {METRICS[y].label}</p>
-            <p className="text-xs text-muted-foreground">{points.length} spillere</p>
+            <div className="flex items-center gap-2">
+              <Badge tone={Math.abs(r) < 0.2 ? "muted" : Math.abs(r) < 0.5 ? "low" : "good"}>r = {signed(r, 2)}</Badge>
+              <Toggle checked={trend} onChange={setTrend} label="Trendlinje" />
+              <span className="text-xs text-muted-foreground">{points.length} spillere</span>
+            </div>
           </div>
-          {players ? <ScatterLab points={points} xLabel={METRICS[x].label} yLabel={METRICS[y].label} xRef={xRef} yRef={yRef} onSelect={setSel} /> : <div className="grid h-[460px] place-items-center text-sm text-muted-foreground">Laster…</div>}
+          {players ? <ScatterLab points={points} xLabel={METRICS[x].label} yLabel={METRICS[y].label} xRef={xRef} yRef={yRef} onSelect={setSel} trend={trend} /> : <div className="grid h-[460px] place-items-center text-sm text-muted-foreground">Laster…</div>}
           <div className="mt-2 flex flex-wrap gap-3 text-xs text-muted-foreground">
             {!colorByLeague && Object.entries(POS_GROUP_COLOR).map(([g, c]) => (
               <span key={g} className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full" style={{ background: c }} />{g}</span>

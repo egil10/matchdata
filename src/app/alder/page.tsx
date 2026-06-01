@@ -6,7 +6,7 @@ import { fmt, signed } from "@/lib/format";
 import { mean, median, stdev, weightedMean, fiveNumber, pearson } from "@/lib/stats";
 import { POS_GROUP_COLOR } from "@/lib/metrics";
 import { PageHeader, Card, Stat, Badge, Avatar, Meter } from "@/components/ui/primitives";
-import { Field, Select, SortHeader } from "@/components/ui/controls";
+import { Field, Select, Segmented, SortHeader } from "@/components/ui/controls";
 import { Tabs } from "@/components/ui/tabs";
 import { BoxPlot, Heatmap, MiniHist, SegBar, LegendChips } from "@/components/dataviz";
 import { AgeHistogram, OverlayHistogram, ScatterLab, StackedBars } from "@/components/charts-lazy";
@@ -47,7 +47,10 @@ export default function AlderPage() {
     () => (players || []).filter((p) => p.g === gender && (league === "all" || p.lg === league)),
     [players, gender, league],
   );
-  const leaguesG = useMemo(() => (leagues || []).filter((l) => l.gender === gender), [leagues, gender]);
+  const leaguesG = useMemo(
+    () => (leagues || []).filter((l) => l.gender === gender).sort((a, b) => a.name.localeCompare(b.name, "nb")),
+    [leagues, gender],
+  );
   const teamById = useMemo(() => Object.fromEntries((teams || []).map((t) => [t.id, t])), [teams]);
 
   const ages = useMemo(() => pool.map((p) => p.age), [pool]);
@@ -369,9 +372,12 @@ function TeamsTab({ aggs, domainMin, domainMax }: { aggs: TeamAgg[]; domainMin: 
             <h3 className="font-semibold">Aldersgrupper per lag</h3>
             <p className="text-xs text-muted-foreground">{percent ? "Andel av tropp" : "Antall spillere"} per aldersgruppe.</p>
           </div>
-          <button onClick={() => setPercent((v) => !v)} className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition hover:text-foreground">
-            {percent ? "Vis antall" : "Vis prosent"}
-          </button>
+          <Segmented
+            size="sm"
+            value={percent ? "pct" : "count"}
+            onChange={(v) => setPercent(v === "pct")}
+            options={[{ value: "count", label: "Antall" }, { value: "pct", label: "Prosent" }]}
+          />
         </div>
         <LegendChips className="mb-3" items={BANDS.map((b) => ({ label: b.label, color: b.color }))} />
         <OverlayHistogramStacked data={stackData} percent={percent} />
@@ -394,8 +400,8 @@ function OverlayHistogramStacked({ data, percent }: { data: Record<string, any>[
 
 /* ============================================================ Compare tab */
 function CompareTab({ aggs, ageRange, domainMin, domainMax }: { aggs: TeamAgg[]; ageRange: number[]; domainMin: number; domainMax: number }) {
-  const opts = aggs.map((a) => ({ value: a.id, label: a.name }));
-  const sortedByName = [...aggs].sort((a, b) => a.name.localeCompare(b.name));
+  const sortedByName = [...aggs].sort((a, b) => a.name.localeCompare(b.name, "nb"));
+  const opts = sortedByName.map((a) => ({ value: a.id, label: a.name }));
   const [aId, setAId] = useState(sortedByName[0]?.id || "");
   const [bId, setBId] = useState(sortedByName[1]?.id || sortedByName[0]?.id || "");
   const A = aggs.find((x) => x.id === aId);

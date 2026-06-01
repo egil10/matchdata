@@ -36,7 +36,7 @@ export function AgeHistogram({
         <XAxis dataKey="age" {...axis} interval={0} angle={0} />
         <YAxis {...axis} allowDecimals={false} />
         <Tooltip {...tooltipStyle} formatter={(v: any) => [v, "Spillere"]} labelFormatter={(l) => `${l} år`} />
-        <Bar dataKey="count" radius={[4, 4, 0, 0]} onClick={(d: any) => onSelect?.(d.birthYear)} cursor={onSelect ? "pointer" : "default"}>
+        <Bar dataKey="count" radius={[4, 4, 0, 0]} isAnimationActive={false} onClick={(d: any) => onSelect?.(d.birthYear)} cursor={onSelect ? "pointer" : "default"}>
           {bars.map((b) => (
             <Cell key={b.birthYear} fill={selected === b.birthYear ? "hsl(var(--accent))" : "hsl(var(--primary))"} fillOpacity={selected && selected !== b.birthYear ? 0.4 : 0.9} />
           ))}
@@ -55,7 +55,7 @@ export function GoalsPerRoundChart({ data, height = 220 }: { data: { round: numb
         <XAxis dataKey="round" {...axis} />
         <YAxis {...axis} allowDecimals={false} />
         <Tooltip {...tooltipStyle} formatter={(v: any, n: any) => [v, n === "goals" ? "Mål" : n]} labelFormatter={(l) => `Runde ${l}`} />
-        <Bar dataKey="goals" fill="hsl(var(--chart-1))" radius={[3, 3, 0, 0]} />
+        <Bar dataKey="goals" fill="hsl(var(--chart-1))" radius={[3, 3, 0, 0]} isAnimationActive={false} />
       </BarChart>
     </ResponsiveContainer>
   );
@@ -109,7 +109,7 @@ export function DonutChart({ segments, height = 200 }: { segments: { name: strin
   return (
     <ResponsiveContainer width="100%" height={height}>
       <PieChart>
-        <Pie data={segments} dataKey="value" nameKey="name" innerRadius="58%" outerRadius="85%" paddingAngle={2} strokeWidth={0}>
+        <Pie data={segments} dataKey="value" nameKey="name" innerRadius="58%" outerRadius="85%" paddingAngle={2} strokeWidth={0} isAnimationActive={false}>
           {segments.map((s) => <Cell key={s.name} fill={s.color} />)}
         </Pie>
         <Tooltip {...tooltipStyle} />
@@ -149,21 +149,39 @@ export function RadarStat({
 
 /* ----------------------------------------------------------- Scatter lab */
 export function ScatterLab({
-  points, xLabel, yLabel, xRef, yRef, height = 460, onSelect,
+  points, xLabel, yLabel, xRef, yRef, height = 460, onSelect, trend = false,
 }: {
   points: { x: number; y: number; name: string; sub: string; color: string; id: string; r?: number }[];
   xLabel: string; yLabel: string; xRef?: number; yRef?: number; height?: number;
-  onSelect?: (id: string) => void;
+  onSelect?: (id: string) => void; trend?: boolean;
 }) {
+  // OLS regression line (only when asked, and enough points)
+  let segment: { x: number; y: number }[] | null = null;
+  if (trend && points.length > 2) {
+    const n = points.length;
+    let sx = 0, sy = 0, sxy = 0, sxx = 0;
+    for (const p of points) { sx += p.x; sy += p.y; sxy += p.x * p.y; sxx += p.x * p.x; }
+    const denom = n * sxx - sx * sx;
+    if (denom !== 0) {
+      const slope = (n * sxy - sx * sy) / denom;
+      const intercept = (sy - slope * sx) / n;
+      const xs = points.map((p) => p.x);
+      const x0 = Math.min(...xs), x1 = Math.max(...xs);
+      segment = [{ x: x0, y: slope * x0 + intercept }, { x: x1, y: slope * x1 + intercept }];
+    }
+  }
+  // For big clouds, dropping per-point bubble sizing keeps it snappy.
+  const big = points.length > 600;
   return (
     <ResponsiveContainer width="100%" height={height}>
       <ScatterChart margin={{ top: 12, right: 16, left: 0, bottom: 16 }}>
         <CartesianGrid stroke="hsl(var(--border))" strokeDasharray="3 3" />
         <XAxis type="number" dataKey="x" name={xLabel} {...axis} label={{ value: xLabel, position: "insideBottom", offset: -8, fill: "hsl(var(--muted-foreground))", fontSize: 12 }} />
         <YAxis type="number" dataKey="y" name={yLabel} {...axis} label={{ value: yLabel, angle: -90, position: "insideLeft", fill: "hsl(var(--muted-foreground))", fontSize: 12 }} />
-        <ZAxis type="number" dataKey="r" range={[40, 320]} />
+        {!big && <ZAxis type="number" dataKey="r" range={[40, 320]} />}
         {xRef != null && <ReferenceLine x={xRef} stroke="hsl(var(--muted-foreground))" strokeDasharray="4 4" />}
         {yRef != null && <ReferenceLine y={yRef} stroke="hsl(var(--muted-foreground))" strokeDasharray="4 4" />}
+        {segment && <ReferenceLine segment={segment as any} stroke="hsl(var(--accent))" strokeWidth={2} strokeDasharray="6 4" ifOverflow="extendDomain" />}
         <Tooltip
           {...tooltipStyle}
           cursor={{ strokeDasharray: "3 3" }}
@@ -180,8 +198,8 @@ export function ScatterLab({
             );
           }}
         />
-        <Scatter data={points} onClick={(d: any) => onSelect?.(d.id)} cursor={onSelect ? "pointer" : "default"}>
-          {points.map((p) => <Cell key={p.id} fill={p.color} fillOpacity={0.72} />)}
+        <Scatter data={points} isAnimationActive={false} onClick={(d: any) => onSelect?.(d.id)} cursor={onSelect ? "pointer" : "default"}>
+          {points.map((p) => <Cell key={p.id} fill={p.color} fillOpacity={big ? 0.55 : 0.72} />)}
         </Scatter>
       </ScatterChart>
     </ResponsiveContainer>
@@ -263,7 +281,7 @@ export function RankBarChart({
         <XAxis type="number" {...axis} />
         <YAxis type="category" dataKey="name" {...axis} width={90} />
         <Tooltip {...tooltipStyle} formatter={(v: any) => [`${v}${unit}`, ""]} />
-        <Bar dataKey="value" fill={color} radius={[0, 4, 4, 0]} />
+        <Bar dataKey="value" fill={color} radius={[0, 4, 4, 0]} isAnimationActive={false} />
       </BarChart>
     </ResponsiveContainer>
   );

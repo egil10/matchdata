@@ -41,6 +41,32 @@ export function fiveNumber(xs: number[]) {
   };
 }
 
+// Histogram bins. Integer metrics over a small range get one bin per value;
+// otherwise ~`target` equal-width buckets. Returns chart-ready rows.
+export function histogram(values: number[], target = 18): { label: string; mid: number; count: number }[] {
+  if (!values.length) return [];
+  const min = Math.min(...values), max = Math.max(...values);
+  if (min === max) return [{ label: String(min), mid: min, count: values.length }];
+  const allInt = values.every((v) => Number.isInteger(v));
+  const range = max - min;
+  if (allInt && range <= target * 1.5) {
+    const counts: Record<number, number> = {};
+    for (let v = min; v <= max; v++) counts[v] = 0;
+    for (const v of values) counts[v]++;
+    return Object.keys(counts).map(Number).sort((a, b) => a - b).map((v) => ({ label: String(v), mid: v, count: counts[v] }));
+  }
+  const width = range / target;
+  const bins = Array.from({ length: target }, (_, i) => ({ lo: min + i * width, hi: min + (i + 1) * width, count: 0 }));
+  for (const v of values) {
+    let idx = Math.floor((v - min) / width);
+    if (idx >= target) idx = target - 1;
+    if (idx < 0) idx = 0;
+    bins[idx].count++;
+  }
+  const dec = width < 1 ? 1 : 0;
+  return bins.map((b) => ({ label: `${b.lo.toFixed(dec)}`, mid: (b.lo + b.hi) / 2, count: b.count }));
+}
+
 // Pearson correlation coefficient.
 export function pearson(xs: number[], ys: number[]): number {
   const n = Math.min(xs.length, ys.length);

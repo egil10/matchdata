@@ -5,7 +5,7 @@ import { useFixtures, useLeagues, useGender, type CFixture } from "@/lib/client"
 import { cn } from "@/lib/cn";
 import { fmtWeekday, fmtDate } from "@/lib/format";
 import { PageHeader, Card, Crest } from "@/components/ui/primitives";
-import { Field, Select } from "@/components/ui/controls";
+import { Field, Select, Segmented } from "@/components/ui/controls";
 
 export default function KamperPage() {
   const gender = useGender();
@@ -15,7 +15,10 @@ export default function KamperPage() {
   const [status, setStatus] = useState<"all" | "played" | "scheduled">("all");
   const [limit, setLimit] = useState(80);
 
-  const leaguesG = useMemo(() => (leagues || []).filter((l) => l.gender === gender), [leagues, gender]);
+  const leaguesG = useMemo(
+    () => (leagues || []).filter((l) => l.gender === gender).sort((a, b) => a.name.localeCompare(b.name, "nb")),
+    [leagues, gender],
+  );
   const leagueIds = useMemo(() => new Set(leaguesG.map((l) => l.id)), [leaguesG]);
 
   const pool = useMemo(
@@ -38,7 +41,11 @@ export default function KamperPage() {
       <div className="mb-5 flex flex-wrap items-end gap-3 rounded-xl border border-border bg-card p-4">
         <Field label="Liga"><Select value={league} onChange={(v) => { setLeague(v); setLimit(80); }} options={[{ value: "all", label: "Alle ligaer" }, ...leaguesG.map((l) => ({ value: l.id, label: l.name }))]} /></Field>
         <Field label="Status">
-          <Select value={status} onChange={(v) => { setStatus(v as any); setLimit(80); }} options={[{ value: "all", label: "Alle" }, { value: "played", label: "Spilte" }, { value: "scheduled", label: "Kommende" }]} />
+          <Segmented
+            value={status}
+            onChange={(v) => { setStatus(v); setLimit(80); }}
+            options={[{ value: "all", label: "Alle" }, { value: "played", label: "Spilte" }, { value: "scheduled", label: "Kommende" }]}
+          />
         </Field>
         <p className="ml-auto self-center text-sm text-muted-foreground">{fixtures ? `${pool.length} kamper` : "Laster…"}</p>
       </div>
