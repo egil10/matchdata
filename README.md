@@ -1,4 +1,4 @@
-# Toppdata ⚽📊
+# Matchdata
 
 **Advanced statistics & analytics for Norwegian football — from Eliteserien down to local divisions.**
 
@@ -12,20 +12,22 @@ This is the most important thing to understand, and it's surfaced **everywhere i
 
 | Layer | Source | Status |
 |---|---|---|
-| **Results, tables, fixtures, half-time scores** (Eliteserien 2023–2025, OBOS-ligaen 2025) | [openfootball](https://github.com/openfootball) — public domain | ✅ **Real** |
-| **Club crests, founding years, stadiums, capacities** | [TheSportsDB](https://www.thesportsdb.com) | ✅ **Real** |
-| **Player-level data** (squads, minutes, goals, cards, on-pitch +/‑, **Team Impact**) | Modeled — *anchored to the real scorelines* | ⚠️ **Modeled** |
-| **Lower & women's divisions** (3. divisjon, Toppserien, 1. div. kvinner) | Modeled | ⚠️ **Modeled** |
+| **Live results, tables & fixtures** — Eliteserien **2026 (in progress)** | [TheSportsDB](https://www.thesportsdb.com) | ✅ **Real** |
+| **Results & tables** — OBOS-ligaen 2025 + Eliteserien 2023–2025 history | [openfootball](https://github.com/openfootball) — public domain | ✅ **Real** |
+| **Final tables** — 2. divisjon (2 groups) & 3. divisjon (6 groups), 2025 | Wikipedia | ✅ **Real** |
+| **Club crests / founders / stadiums** | Wikidata (P154) + TheSportsDB | ✅ **Real** |
+| **Managers & top scorers** (Eliteserien) | Wikipedia | ✅ **Real** |
+| **Player-level data** (squads, minutes, on-pitch +/‑, **Team Impact**) | Modeled — clearly labeled "Modellert" | ⚠️ **Modeled** |
 
-**Why modeled?** Granular per-player data (lineups, substitution minutes, goal minutes) for Norwegian lower divisions is **not available from any free, legal source** — it lives in NFF's FIKS system, which prohibits scraping. So the player layer is modeled with a deterministic, seeded simulation that is **anchored to the real results**: real goals are distributed across modeled scorers and minutes, so every **team result and league table is exactly real**, while individual player numbers are transparent estimates. See the in-app **Om & metode** page (`/om`).
+**Why modeled?** Granular per-player data (lineups, substitution minutes, goal minutes) for Norwegian lower divisions is **not available from any free, legal source** — it lives in NFF's FIKS system, which prohibits scraping. So the player layer is modeled with a deterministic, seeded simulation **anchored to the real results/tables**, while individual player numbers are transparent estimates. See the in-app **Om & metode** page (`/om`).
 
-The Eliteserien 2024 table reproduced here matches reality exactly (Bodø/Glimt champions on 62 pts; Lillestrøm & Odd relegated).
+The live **Eliteserien 2026** table reproduced here matches Wikipedia exactly (Viking top on 27, Start bottom on 7), as do the real 2./3. divisjon tables (Junkeren, Bjarg, Kvik Halden et al.).
 
 ---
 
 ## ✨ Features
 
-- **Real league tables & results** for Eliteserien (complete 2024 season) and OBOS-ligaen (live 2025), with 2023/2025 history.
+- **Real league tables & results** — live Eliteserien 2026, OBOS-ligaen 2025, Eliteserien history (2023–2025), and **real final tables for 2. & 3. divisjon** (grassroots, 8 groups).
 - **Team Impact** — full re-implementation of kampdata's signature metric (`PerfZ + 0.5·MinZ`, 20 % qualification threshold), plus **+/‑/90**, weighted average age, weighted P/K, and official tie-break ordering.
 - **League dashboards** — points-race progression, goals per round, results distribution, age analysis, season records.
 - **Player profiles** — percentile radar vs. league peers, Team-Impact breakdown, match-by-match on-pitch goal differential.

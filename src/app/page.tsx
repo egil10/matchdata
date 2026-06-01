@@ -50,10 +50,10 @@ export default function Home() {
           </div>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-2 text-xs">
             <DataBadge source="real" />
-            <span className="text-muted-foreground">Eliteserien · OBOS-ligaen</span>
+            <span className="text-muted-foreground">Eliteserien 2026 · OBOS · 2./3. divisjon</span>
             <span className="text-muted-foreground/40">|</span>
             <DataBadge source="modeled" />
-            <span className="text-muted-foreground">spillerstatistikk &amp; lavere nivå</span>
+            <span className="text-muted-foreground">spillerstatistikk</span>
           </div>
         </div>
       </section>

@@ -23,8 +23,8 @@ export function Logo({ className }: { className?: string }) {
   return (
     <Link href="/" className={cn("flex items-center gap-2", className)}>
       <LogoMark />
-      <span className="text-lg font-extrabold tracking-tight">
-        Topp<span className="text-gradient">data</span>
+      <span className="font-display text-[19px] font-extrabold lowercase tracking-tight">
+        match<span className="text-muted-foreground">data</span>
       </span>
     </Link>
   );

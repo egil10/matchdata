@@ -1,0 +1,31 @@
+{
+  "fetchedAt": "2026-06-01T10:06:13.942Z",
+  "recent": [
+    {
+      "id": "2399079",
+      "date": "2026-05-30",
+      "time": "14:00",
+      "round": "11",
+      "home": "Molde",
+      "away": "Sandefjord",
+      "hg": 2,
+      "ag": 1,
+      "venue": "Aker Stadion",
+      "season": "2026"
+    }
+  ],
+  "upcoming": [
+    {
+      "id": "2399090",
+      "date": "2026-07-11",
+      "time": "14:00",
+      "round": "13",
+      "home": "Aalesund",
+      "away": "Molde",
+      "hg": null,
+      "ag": null,
+      "venue": "Color Line Stadion",
+      "season": "2026"
+    }
+  ]
+}

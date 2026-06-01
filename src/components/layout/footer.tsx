@@ -10,12 +10,12 @@ export function Footer() {
         <div className="sm:col-span-2 lg:col-span-1">
           <div className="flex items-center gap-2">
             <LogoMark />
-            <span className="text-lg font-extrabold tracking-tight">
-              Topp<span className="text-gradient">data</span>
+            <span className="font-display text-lg font-extrabold lowercase tracking-tight">
+              match<span className="text-muted-foreground">data</span>
             </span>
           </div>
           <p className="mt-3 max-w-xs text-sm text-muted-foreground">
-            Avansert statistikk og analyse for norsk fotball — fra Eliteserien til lokale divisjoner.
+            Avansert statistikk og analyse for norsk fotball — fra Eliteserien helt ned til grasrota.
           </p>
         </div>
 
@@ -59,7 +59,7 @@ export function Footer() {
 
       <div className="border-t border-border">
         <div className="container-page flex flex-col items-center justify-between gap-2 py-4 text-xs text-muted-foreground sm:flex-row">
-          <p>© {new Date().getFullYear()} Toppdata · Hobbyprosjekt · Ikke tilknyttet NFF</p>
+          <p>© {new Date().getFullYear()} Matchdata · Hobbyprosjekt · Ikke tilknyttet NFF</p>
           <p>Sesong {meta.seasonLabel} · {meta.counts.players} spillere · {meta.counts.matches} kamper</p>
         </div>
       </div>

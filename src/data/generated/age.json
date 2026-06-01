@@ -1,228 +1,228 @@
 {
   "men": {
-    "total": 1380,
-    "avgAge": 23.2,
-    "weightedAvgAge": 23.1,
+    "total": 3312,
+    "avgAge": 22.9,
+    "weightedAvgAge": 22.7,
     "bars": [
       {
-        "birthYear": 1988,
-        "age": 36,
-        "count": 1
-      },
-      {
         "birthYear": 1989,
-        "age": 35,
-        "count": 1
+        "age": 37,
+        "count": 2
       },
       {
         "birthYear": 1990,
-        "age": 34,
-        "count": 1
+        "age": 36,
+        "count": 4
       },
       {
         "birthYear": 1991,
-        "age": 33,
-        "count": 5
+        "age": 35,
+        "count": 3
       },
       {
         "birthYear": 1992,
-        "age": 32,
-        "count": 10
+        "age": 34,
+        "count": 15
       },
       {
         "birthYear": 1993,
-        "age": 31,
-        "count": 14
+        "age": 33,
+        "count": 12
       },
       {
         "birthYear": 1994,
-        "age": 30,
-        "count": 30
+        "age": 32,
+        "count": 32
       },
       {
         "birthYear": 1995,
-        "age": 29,
-        "count": 47
+        "age": 31,
+        "count": 54
       },
       {
         "birthYear": 1996,
-        "age": 28,
-        "count": 51
+        "age": 30,
+        "count": 87
       },
       {
         "birthYear": 1997,
-        "age": 27,
-        "count": 74
+        "age": 29,
+        "count": 137
       },
       {
         "birthYear": 1998,
-        "age": 26,
-        "count": 108
+        "age": 28,
+        "count": 206
       },
       {
         "birthYear": 1999,
-        "age": 25,
-        "count": 110
+        "age": 27,
+        "count": 203
       },
       {
         "birthYear": 2000,
-        "age": 24,
-        "count": 142
+        "age": 26,
+        "count": 298
       },
       {
         "birthYear": 2001,
-        "age": 23,
-        "count": 141
+        "age": 25,
+        "count": 345
       },
       {
         "birthYear": 2002,
-        "age": 22,
-        "count": 152
+        "age": 24,
+        "count": 344
       },
       {
         "birthYear": 2003,
-        "age": 21,
-        "count": 129
+        "age": 23,
+        "count": 314
       },
       {
         "birthYear": 2004,
-        "age": 20,
-        "count": 109
+        "age": 22,
+        "count": 324
       },
       {
         "birthYear": 2005,
-        "age": 19,
-        "count": 82
+        "age": 21,
+        "count": 277
       },
       {
         "birthYear": 2006,
-        "age": 18,
-        "count": 68
+        "age": 20,
+        "count": 210
       },
       {
         "birthYear": 2007,
-        "age": 17,
-        "count": 28
+        "age": 19,
+        "count": 155
       },
       {
         "birthYear": 2008,
-        "age": 16,
-        "count": 66
+        "age": 18,
+        "count": 104
       },
       {
         "birthYear": 2009,
-        "age": 15,
-        "count": 11
+        "age": 17,
+        "count": 177
+      },
+      {
+        "birthYear": 2010,
+        "age": 16,
+        "count": 9
       }
     ]
   },
   "women": {
     "total": 506,
-    "avgAge": 23.9,
-    "weightedAvgAge": 24,
+    "avgAge": 23.8,
+    "weightedAvgAge": 23.9,
     "bars": [
       {
-        "birthYear": 1988,
+        "birthYear": 1990,
         "age": 36,
         "count": 1
       },
       {
-        "birthYear": 1989,
+        "birthYear": 1991,
         "age": 35,
         "count": 1
       },
       {
-        "birthYear": 1990,
+        "birthYear": 1992,
         "age": 34,
-        "count": 4
+        "count": 2
       },
       {
-        "birthYear": 1991,
+        "birthYear": 1993,
         "age": 33,
         "count": 4
       },
       {
-        "birthYear": 1992,
-        "age": 32,
-        "count": 6
-      },
-      {
-        "birthYear": 1993,
-        "age": 31,
-        "count": 15
-      },
-      {
         "birthYear": 1994,
-        "age": 30,
-        "count": 12
+        "age": 32,
+        "count": 5
       },
       {
         "birthYear": 1995,
-        "age": 29,
-        "count": 21
+        "age": 31,
+        "count": 14
       },
       {
         "birthYear": 1996,
-        "age": 28,
-        "count": 27
+        "age": 30,
+        "count": 14
       },
       {
         "birthYear": 1997,
-        "age": 27,
-        "count": 36
+        "age": 29,
+        "count": 22
       },
       {
         "birthYear": 1998,
-        "age": 26,
-        "count": 38
+        "age": 28,
+        "count": 26
       },
       {
         "birthYear": 1999,
-        "age": 25,
-        "count": 46
+        "age": 27,
+        "count": 35
       },
       {
         "birthYear": 2000,
-        "age": 24,
-        "count": 50
+        "age": 26,
+        "count": 40
       },
       {
         "birthYear": 2001,
-        "age": 23,
-        "count": 67
+        "age": 25,
+        "count": 50
       },
       {
         "birthYear": 2002,
-        "age": 22,
-        "count": 42
+        "age": 24,
+        "count": 46
       },
       {
         "birthYear": 2003,
-        "age": 21,
-        "count": 36
+        "age": 23,
+        "count": 57
       },
       {
         "birthYear": 2004,
-        "age": 20,
-        "count": 31
+        "age": 22,
+        "count": 43
       },
       {
         "birthYear": 2005,
-        "age": 19,
-        "count": 27
+        "age": 21,
+        "count": 41
       },
       {
         "birthYear": 2006,
-        "age": 18,
-        "count": 19
+        "age": 20,
+        "count": 33
       },
       {
         "birthYear": 2007,
+        "age": 19,
+        "count": 29
+      },
+      {
+        "birthYear": 2008,
+        "age": 18,
+        "count": 20
+      },
+      {
+        "birthYear": 2009,
         "age": 17,
         "count": 7
       },
       {
-        "birthYear": 2008,
+        "birthYear": 2010,
         "age": 16,
         "count": 16
       }

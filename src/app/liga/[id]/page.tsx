@@ -50,9 +50,14 @@ export default function LeaguePage({ params }: { params: { id: string } }) {
       />
 
       {league.dataSource === "real" && (
-        <p className="mb-5 rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-4 py-2.5 text-sm text-muted-foreground">
-          <span className="font-medium text-emerald-500">Ekte data:</span> tabell og resultater er hentet direkte fra openfootball (offentlig eiendom).
-          Spillerstatistikk (Team Impact, spilletid, mål) er <span className="font-medium text-amber-500">modellert</span>.
+        <p className="mb-5 rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-2.5 text-sm text-muted-foreground">
+          {league.tableReal ? (
+            <><span className="font-medium text-emerald-600 dark:text-emerald-400">Ekte sluttabell {league.season}</span> (Wikipedia). Spillere, kampdetaljer og Team Impact er <span className="font-medium text-amber-500">modellert</span>.</>
+          ) : league.id === "eliteserien" ? (
+            <><span className="font-medium text-emerald-600 dark:text-emerald-400">Ekte resultater og tabell</span> for sesongen {league.season} (TheSportsDB), oppdatert fortløpende. Spillerstatistikk er <span className="font-medium text-amber-500">modellert</span>.</>
+          ) : (
+            <><span className="font-medium text-emerald-600 dark:text-emerald-400">Ekte data</span>: tabell og resultater fra openfootball (offentlig eiendom). Spillerstatistikk er <span className="font-medium text-amber-500">modellert</span>.</>
+          )}
         </p>
       )}
 
@@ -84,15 +89,35 @@ export default function LeaguePage({ params }: { params: { id: string } }) {
                   </div>
                   <ImpactTable players={topImpact} />
                 </div>
-                <Card className="h-fit">
-                  <div className="flex items-center justify-between border-b border-border p-4">
-                    <h3 className="font-semibold">Toppscorere</h3>
-                    <Badge tone="low">Modellert</Badge>
-                  </div>
-                  <div className="grid gap-1 p-2">
-                    {scorers.map((p, i) => <ScorerRow key={p.id} p={p} rank={i + 1} />)}
-                  </div>
-                </Card>
+                <div className="space-y-6">
+                  {league.realTopScorers && league.realTopScorers.length > 0 && (
+                    <Card className="h-fit">
+                      <div className="flex items-center justify-between border-b border-border p-4">
+                        <h3 className="font-semibold">Toppscorere {league.season}</h3>
+                        <DataBadge source="real" />
+                      </div>
+                      <div className="grid gap-0.5 p-2">
+                        {league.realTopScorers.map((s, i) => (
+                          <div key={i} className="flex items-center gap-3 rounded-lg px-2 py-1.5 text-sm">
+                            <span className="w-5 text-center text-xs font-semibold text-muted-foreground">{i + 1}</span>
+                            <span className="min-w-0 flex-1 truncate font-medium">{s.player}</span>
+                            <span className="truncate text-xs text-muted-foreground">{s.club}</span>
+                            <span className="stat-num w-6 text-right font-bold">{s.goals}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </Card>
+                  )}
+                  <Card className="h-fit">
+                    <div className="flex items-center justify-between border-b border-border p-4">
+                      <h3 className="font-semibold">Toppscorere {league.realTopScorers ? "(modell)" : ""}</h3>
+                      <Badge tone="low">Modellert</Badge>
+                    </div>
+                    <div className="grid gap-1 p-2">
+                      {scorers.slice(0, 10).map((p, i) => <ScorerRow key={p.id} p={p} rank={i + 1} />)}
+                    </div>
+                  </Card>
+                </div>
               </div>
             ),
           },

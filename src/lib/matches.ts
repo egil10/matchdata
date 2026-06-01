@@ -7,10 +7,16 @@ async function loadLeague(leagueId: string): Promise<MatchDetail[]> {
   switch (leagueId) {
     case "eliteserien": return (await import("@/data/generated/matches-eliteserien.json")).default as unknown as MatchDetail[];
     case "obos-ligaen": return (await import("@/data/generated/matches-obos-ligaen.json")).default as unknown as MatchDetail[];
-    case "postnord-avd1": return (await import("@/data/generated/matches-postnord-avd1.json")).default as unknown as MatchDetail[];
-    case "3div-avd1": return (await import("@/data/generated/matches-3div-avd1.json")).default as unknown as MatchDetail[];
     case "toppserien": return (await import("@/data/generated/matches-toppserien.json")).default as unknown as MatchDetail[];
     case "1div-kvinner": return (await import("@/data/generated/matches-1div-kvinner.json")).default as unknown as MatchDetail[];
+    case "2div-avd1": return (await import("@/data/generated/matches-2div-avd1.json")).default as unknown as MatchDetail[];
+    case "2div-avd2": return (await import("@/data/generated/matches-2div-avd2.json")).default as unknown as MatchDetail[];
+    case "3div-avd1": return (await import("@/data/generated/matches-3div-avd1.json")).default as unknown as MatchDetail[];
+    case "3div-avd2": return (await import("@/data/generated/matches-3div-avd2.json")).default as unknown as MatchDetail[];
+    case "3div-avd3": return (await import("@/data/generated/matches-3div-avd3.json")).default as unknown as MatchDetail[];
+    case "3div-avd4": return (await import("@/data/generated/matches-3div-avd4.json")).default as unknown as MatchDetail[];
+    case "3div-avd5": return (await import("@/data/generated/matches-3div-avd5.json")).default as unknown as MatchDetail[];
+    case "3div-avd6": return (await import("@/data/generated/matches-3div-avd6.json")).default as unknown as MatchDetail[];
     default: return [];
   }
 }

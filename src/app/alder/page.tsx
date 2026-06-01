@@ -69,7 +69,7 @@ export default function AlderPage() {
         <section className="mt-6 animate-fade-in">
           <div className="mb-3 flex items-center justify-between">
             <h3 className="font-semibold">Født {selected} · {SEASON - selected} år <span className="text-muted-foreground">({selectedPlayers.length} spillere)</span></h3>
-            <button onClick={() => setSelected(null)} className="text-sm text-muted-foreground hover:text-foreground">Lukk ✕</button>
+            <button onClick={() => setSelected(null)} className="text-sm text-muted-foreground hover:text-foreground">Lukk</button>
           </div>
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
             {selectedPlayers.slice(0, 60).map((p) => (

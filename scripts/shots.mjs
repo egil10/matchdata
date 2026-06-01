@@ -7,12 +7,12 @@ mkdirSync(OUT, { recursive: true });
 const shots = [
   ["/", "home"],
   ["/liga/eliteserien", "league"],
-  ["/lag/eliteserien__odd", "team"],
-  ["/spiller/eliteserien__odd__p1", "player"],
+  ["/lag/eliteserien__hamkam", "team"],
+  ["/spiller/eliteserien__hamkam__p1", "player"],
   ["/utforsk", "explore"],
-  ["/spillere", "players"],
-  ["/kamp/eliteserien-1-odd-haugesund", "match"],
-  ["/alder", "age"],
+  ["/liga/3div-avd1", "lower"],
+  ["/kamp/eliteserien-1-hamkam-viking", "match"],
+  ["/ligaer", "leagues"],
 ];
 
 async function run(channel) {

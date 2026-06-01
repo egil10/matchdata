@@ -51,6 +51,7 @@ export default function TeamPage({ params }: { params: { id: string } }) {
             <span className="inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5" />{team.city}, {team.fylke}</span>
             {team.founded && <span className="inline-flex items-center gap-1"><Calendar className="h-3.5 w-3.5" />Etbl. {team.founded}</span>}
             {team.stadium && <span>{team.stadium}{team.capacity ? ` (${fmt(team.capacity)})` : ""}</span>}
+            {team.manager && <span className="inline-flex items-center gap-1"><Badge tone="good">Trener: {team.manager}</Badge></span>}
           </span>
         }
         badge={<DataBadge source={team.dataSource} />}

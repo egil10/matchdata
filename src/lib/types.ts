@@ -25,6 +25,9 @@ export interface League {
   divisionName: string; avdeling: string | null;
   level: number; gender: Gender; color: string;
   dataSource: DataSource; season: number;
+  tableReal?: boolean;
+  realTopScorers?: { player: string; club: string; goals: number }[] | null;
+  realAttendances?: { club: string; average: number }[] | null;
   teamCount: number; matchCount: number;
   roundsTotal: number; roundsPlayed: number; inProgress: boolean;
   stats: LeagueStats;
@@ -39,6 +42,7 @@ export interface Team {
   city: string; fylke: string;
   founded: number | null; stadium: string | null; capacity: number | null;
   badge: string | null; desc: string | null;
+  manager?: string | null; tableReal?: boolean;
   played: number; w: number; d: number; l: number;
   gf: number; ga: number; gd: number; points: number;
   ppg: number; mfPerMatch: number; form: string[];

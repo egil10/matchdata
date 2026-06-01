@@ -30,6 +30,41 @@ export const CITY_FYLKE = {
   Voss: "Vestland", Førde: "Vestland", Florø: "Vestland", Stord: "Vestland",
   Bømlo: "Vestland", Klepp: "Rogaland", Time: "Rogaland", Hå: "Rogaland",
   Kolbotn: "Akershus", Avaldsnes: "Rogaland", Harstad: "Troms",
+  Skjervøy: "Troms", Sortland: "Nordland", Melhus: "Trøndelag", Volda: "Møre og Romsdal",
+  Surnadal: "Møre og Romsdal", Elverum: "Innlandet", Gjøvik: "Innlandet", Lillehammer: "Innlandet",
+  Halden: "Østfold", Horten: "Vestfold",
+};
+
+// City for the real lower-division clubs (2. & 3. divisjon).
+export const LOWER_CLUB_CITY = {
+  "Sandnes Ulf": "Sandnes", "Brattvåg": "Ålesund", "Sotra": "Øygarden", "Jerv": "Grimstad",
+  "Arendal": "Arendal", "Eik Tønsberg": "Tønsberg", "Lysekloster": "Bjørnafjorden",
+  "Notodden": "Notodden", "Pors": "Porsgrunn", "Sandviken": "Bergen", "Træff": "Molde",
+  "Vard Haugesund": "Haugesund", "Fløy": "Kristiansand", "Brann 2": "Bergen",
+  "Strømmen": "Lillestrøm", "Grorud": "Oslo", "Kjelsås": "Oslo", "Tromsdalen": "Tromsø",
+  "Ull/Kisa": "Ullensaker", "Eidsvold Turn": "Eidsvoll", "Hønefoss": "Ringerike",
+  "Stjørdals-Blink": "Stjørdal", "Rana": "Mo i Rana", "Levanger": "Levanger",
+  "Follo": "Nordre Follo", "Strindheim": "Trondheim", "Alta": "Alta", "Asker": "Asker",
+  "Junkeren": "Bodø", "Frigg": "Oslo", "Bærum": "Bærum", "Gamle Oslo": "Oslo",
+  "Tromsø 2": "Tromsø", "Ullern": "Oslo", "Fløya": "Tromsø", "KFUM 2": "Oslo",
+  "Harstad": "Harstad", "Skjervøy": "Skjervøy", "Sortland": "Sortland", "Alta 2": "Alta",
+  "Trygg/Lade": "Trondheim", "Melhus": "Melhus", "Volda": "Volda", "Spjelkavik": "Ålesund",
+  "Rosenborg 2": "Trondheim", "Aalesunds 2": "Ålesund", "Nardo": "Trondheim", "Byåsen": "Trondheim",
+  "Molde 2": "Molde", "Ranheim 2": "Trondheim", "Kristiansund 2": "Kristiansund", "Surnadal": "Surnadal", "Tiller": "Trondheim",
+  "Lørenskog": "Lørenskog", "Elverum": "Elverum", "Gjøvik-Lyn": "Gjøvik", "Lillehammer": "Lillehammer",
+  "Nordstrand": "Oslo", "Skjetten": "Skjetten", "Kongsvinger 2": "Kongsvinger", "Lillestrøm 2": "Lillestrøm",
+  "Skedsmo": "Lillestrøm", "Strømsgodset 2": "Drammen", "HamKam 2": "Hamar", "Bjørkelangen": "Lørenskog",
+  "Bjarg": "Bergen", "Førde": "Førde", "Fana": "Bergen", "Os": "Bjørnafjorden", "Fyllingsdalen": "Bergen",
+  "Sandefjord 2": "Sandefjord", "Gneist": "Bergen", "Askøy": "Bergen", "Vålerenga 2": "Oslo",
+  "Åsane 2": "Bergen", "Lyn 2": "Oslo", "Loddefjord": "Bergen", "Lyngbø": "Bergen", "Fjøra": "Sogndalsfjøra",
+  "Vidar": "Stavanger", "Vindbjart": "Kristiansand", "Djerv 1919": "Haugesund", "Viking 2": "Stavanger",
+  "Madla": "Stavanger", "Brodd": "Stavanger", "Stord": "Stord", "Hinna": "Stavanger", "Våg": "Stavanger",
+  "Haugesund 2": "Haugesund", "Sola": "Stavanger", "Sandnes Ulf 2": "Sandnes", "Staal Jørpeland": "Stavanger", "Torvastad": "Haugesund",
+  "Kvik Halden": "Halden", "Fram Larvik": "Larvik", "Ørn Horten": "Horten", "Lokomotiv Oslo": "Oslo",
+  "Grei": "Oslo", "Oppsal": "Oslo", "Odd 2": "Skien", "Stabæk 2": "Bærum", "Drøbak-Frogn": "Drøbak",
+  "Sarpsborg 08 2": "Sarpsborg", "Ready": "Oslo", "Fredrikstad 2": "Fredrikstad", "Pors 2": "Porsgrunn", "Flint": "Tønsberg",
+  "Kvik": "Trondheim", "Ulfstind": "Tromsø", "Funnefoss/Vormsund": "Eidsvoll", "Ullensaker/Kisa 2": "Ullensaker",
+  "Åssiden": "Drammen",
 };
 
 export const REAL_LEAGUES = [
@@ -44,7 +79,9 @@ export const REAL_LEAGUES = [
     color: "#0ea5e9",
     source: "openfootball",
     seasons: { 2023: "eliteserien-2023", 2024: "eliteserien-2024", 2025: "eliteserien-2025" },
-    primarySeason: 2024,
+    primarySeason: 2026,
+    primarySource: "thesportsdb",
+    primaryFile: "eliteserien-2026",
   },
   {
     id: "obos-ligaen",
@@ -97,6 +134,26 @@ export const CLUB_INFO = {
   "Åsane Fotball": { name: "Åsane", short: "Åsane", city: "Bergen" },
 };
 
+// TheSportsDB 2026 Eliteserien names -> display info (live current season).
+export const TSDB_CLUB = {
+  "Aalesund": { name: "Aalesund", short: "AaFK", city: "Ålesund" },
+  "Bodø/Glimt": { name: "Bodø/Glimt", short: "Glimt", city: "Bodø" },
+  "Brann": { name: "Brann", short: "Brann", city: "Bergen" },
+  "Fredrikstad": { name: "Fredrikstad", short: "FFK", city: "Fredrikstad" },
+  "Hamarkameratene": { name: "HamKam", short: "HamKam", city: "Hamar" },
+  "KFUM-Kameratene Oslo": { name: "KFUM Oslo", short: "KFUM", city: "Oslo" },
+  "Kristiansund": { name: "Kristiansund", short: "KBK", city: "Kristiansund" },
+  "Lillestrøm": { name: "Lillestrøm", short: "LSK", city: "Lillestrøm" },
+  "Molde": { name: "Molde", short: "Molde", city: "Molde" },
+  "Rosenborg": { name: "Rosenborg", short: "RBK", city: "Trondheim" },
+  "Sandefjord": { name: "Sandefjord", short: "Sandefjord", city: "Sandefjord" },
+  "Sarpsborg 08": { name: "Sarpsborg 08", short: "Sarpsborg", city: "Sarpsborg" },
+  "Start": { name: "Start", short: "Start", city: "Kristiansand" },
+  "Tromsø": { name: "Tromsø", short: "TIL", city: "Tromsø" },
+  "Viking": { name: "Viking", short: "Viking", city: "Stavanger" },
+  "Vålerenga": { name: "Vålerenga", short: "VIF", city: "Oslo" },
+};
+
 // Match TheSportsDB crest records to our display names.
 export const TSDB_BADGE_ALIAS = {
   Aalesund: "Aalesund",
@@ -112,44 +169,6 @@ export const TSDB_BADGE_ALIAS = {
 };
 
 export const MODELED_LEAGUES = [
-  {
-    id: "postnord-avd1",
-    name: "PostNord-ligaen avd. 1",
-    short: "PostNord 1",
-    divisionName: "PostNord-ligaen (2. divisjon)",
-    avdeling: "Avdeling 1",
-    level: 3,
-    gender: "men",
-    color: "#2563eb",
-    teams: [
-      { name: "Arendal", city: "Arendal" }, { name: "Brann 2", city: "Bergen" },
-      { name: "Brattvåg", city: "Ålesund" }, { name: "Eik Tønsberg", short: "Eik", city: "Tønsberg" },
-      { name: "Fløy", city: "Kristiansand" }, { name: "Jerv", city: "Grimstad" },
-      { name: "Lysekloster", city: "Bjørnafjorden" }, { name: "Notodden", city: "Notodden" },
-      { name: "Pors", city: "Porsgrunn" }, { name: "Sandnes Ulf", city: "Sandnes" },
-      { name: "Sandviken", city: "Bergen" }, { name: "Sotra", city: "Øygarden" },
-      { name: "Træff", city: "Molde" }, { name: "Vard Haugesund", short: "Vard", city: "Haugesund" },
-    ],
-  },
-  {
-    id: "3div-avd1",
-    name: "3. divisjon avd. 1",
-    short: "3. div 1",
-    divisionName: "3. divisjon",
-    avdeling: "Avdeling 1",
-    level: 4,
-    gender: "men",
-    color: "#f59e0b",
-    teams: [
-      { name: "Korsvoll", city: "Oslo" }, { name: "Lørenskog", city: "Lørenskog" },
-      { name: "Nordstrand", city: "Oslo" }, { name: "Oppsal", city: "Oslo" },
-      { name: "Skjetten", city: "Skjetten" }, { name: "Ready", city: "Oslo" },
-      { name: "Frigg", city: "Oslo" }, { name: "Ås", city: "Ås" },
-      { name: "Drøbak-Frogn", city: "Drøbak" }, { name: "Fram Larvik", short: "Fram", city: "Larvik" },
-      { name: "Sprint-Jeløy", city: "Moss" }, { name: "Kråkerøy", city: "Fredrikstad" },
-      { name: "Råde", city: "Råde" }, { name: "Rælingen", city: "Rælingen" },
-    ],
-  },
   {
     id: "toppserien",
     name: "Toppserien",

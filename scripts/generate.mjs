@@ -1,5 +1,5 @@
 // ============================================================================
-//  Toppdata data pipeline
+//  Matchdata data pipeline
 //  ---------------------------------------------------------------------------
 //  REAL  : Eliteserien + OBOS-ligaen results/tables come from openfootball
 //          (public domain). 2023-2025 history for Eliteserien.
@@ -18,7 +18,7 @@ import {
 } from "./lib/metrics.mjs";
 import {
   REAL_LEAGUES, MODELED_LEAGUES, CLUB_INFO, CITY_FYLKE, TSDB_BADGE_ALIAS,
-  SURFACES, NAMES,
+  TSDB_CLUB, LOWER_CLUB_CITY, SURFACES, NAMES,
 } from "./lib/sources.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -27,8 +27,8 @@ const CACHE = join(__dirname, "cache");
 const OUT = join(ROOT, "src", "data", "generated");
 const PUB = join(ROOT, "public", "data");
 
-const SEASON = 2024; // showcase season — complete real Eliteserien data
-const SEASON_LABEL = "2024";
+const SEASON = 2026; // current live season
+const SEASON_LABEL = "2026";
 const rng = new RNG(20260601);
 
 // ---------------------------------------------------------------------------
@@ -102,8 +102,23 @@ function parseOpenfootball(file, season = SEASON) {
   return matches;
 }
 
+// Parse the live 2026 Eliteserien JSON cached from TheSportsDB.
+function parseTSDB(file) {
+  const arr = loadJson("thesportsdb", `${file}.json`) || [];
+  return arr.map((m) => ({
+    round: m.round, date: m.date, time: m.time || "15:00",
+    status: m.hg != null ? "played" : "scheduled",
+    homeRaw: m.home, awayRaw: m.away,
+    hg: m.hg, ag: m.ag, hth: null, hta: null, venue: m.venue || null,
+  }));
+}
+
+function normClub(s) {
+  return s.toLowerCase().replace(/[^a-zæøå0-9]/g, "").replace(/0?8$/, "");
+}
+
 function clubDisplay(raw) {
-  const info = CLUB_INFO[raw];
+  const info = CLUB_INFO[raw] || TSDB_CLUB[raw];
   if (info) return info;
   // fallback: strip common tokens
   let name = raw.replace(/\b(FK|IL|IF|BK|SK|IK|FC|Fotball)\b/g, "").replace(/\s+/g, " ").trim();
@@ -121,12 +136,29 @@ const tsdbByName = {};
 for (const arr of Object.values(tsdbTeams)) {
   for (const t of arr) tsdbByName[t.name] = t;
 }
+function loadJson(...p) {
+  try { return JSON.parse(readFileSync(join(CACHE, ...p), "utf8")); } catch { return null; }
+}
+// Real club crests from Wikidata (P154) — covers more clubs than TheSportsDB.
+const wdLogos = loadJson("wikidata", "logos.json") || {};
+// Real season facts (Wikipedia): top scorers, managers, attendances.
+const FACTS = {
+  2026: loadJson("wikipedia", "eliteserien-2026.json"),
+  2024: loadJson("wikipedia", "eliteserien-2024.json"),
+};
+const LOWER = loadJson("wikipedia", "lower-divisions-2025.json");
+
 function crestFor(displayName) {
   const alias = TSDB_BADGE_ALIAS[displayName] || displayName;
   const rec = tsdbByName[alias];
-  return rec
-    ? { badge: rec.badge || null, founded: rec.formed ? +rec.formed : null, stadium: rec.stadium || null, capacity: rec.capacity ? +rec.capacity : null, desc: rec.desc || null }
-    : { badge: null, founded: null, stadium: null, capacity: null, desc: null };
+  const badge = wdLogos[displayName] || (rec ? rec.badge || null : null);
+  return {
+    badge,
+    founded: rec && rec.formed ? +rec.formed : null,
+    stadium: rec ? rec.stadium || null : null,
+    capacity: rec && rec.capacity ? +rec.capacity : null,
+    desc: rec ? rec.desc || null : null,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -389,7 +421,7 @@ function buildMatch(base, home, away, hg, ag, hth, hta, dataSource) {
       .sort((x, y) => (y.started - x.started) || x.shirtNo - y.shirtNo);
   }
 
-  const venue = home.stadium || `${home.city} stadion`;
+  const venue = base.venue || home.stadium || `${home.city} stadion`;
   return {
     ...base,
     homeTeamId: home.id, awayTeamId: away.id,
@@ -420,7 +452,7 @@ function makeFixture(base, home, away, dataSource) {
     homeName: home.name, awayName: away.name, homeShort: home.short, awayShort: away.short,
     homeColor: home.color, awayColor: away.color,
     homeGoals: null, awayGoals: null, htHome: null, htAway: null, result: null,
-    venue: home.stadium || `${home.city} stadion`, surface: null, attendance: null, referee: null,
+    venue: base.venue || home.stadium || `${home.city} stadion`, surface: null, attendance: null, referee: null,
     kampnummer: nextKampnr(base.level), dataSource, resultReal: false, detailModeled: false,
     status: "scheduled", events: [], lineups: { home: [], away: [] },
   };
@@ -478,7 +510,9 @@ for (const lg of REAL_LEAGUES) {
     };
   }
   // primary season -> full build (real results + modeled player detail)
-  const all = parseOpenfootball(`${lg.seasons[primary]}.txt`, primary);
+  const all = lg.primarySource === "thesportsdb"
+    ? parseTSDB(lg.primaryFile)
+    : parseOpenfootball(`${lg.seasons[primary]}.txt`, primary);
   const played = all.filter((m) => m.status === "played");
   const teamNames = [...new Set(all.flatMap((m) => [m.homeRaw, m.awayRaw]))];
   const teamObjs = teamNames.map((raw) => {
@@ -504,14 +538,21 @@ for (const lg of REAL_LEAGUES) {
     if (t) t.strength = clamp(0.74 - i * (0.34 / table.length) + (lg.level === 1 ? 0.12 : lg.level === 2 ? 0.04 : 0), 0.2, 0.92);
   });
   for (const t of teamObjs) t.squad = makeSquad(t, lg.level, lg.gender, primary);
+  // attach real managers (Wikipedia) where available
+  const facts = FACTS[primary];
+  if (facts && facts.managers) {
+    const mm = {};
+    for (const x of facts.managers) mm[normClub(x.club)] = x.manager;
+    for (const t of teamObjs) t.manager = mm[normClub(t.name)] || null;
+  }
   for (const m of all) {
     const home = teamsById.get(nameToId.get(m.homeRaw));
     const away = teamsById.get(nameToId.get(m.awayRaw));
-    const base = { id: `${lg.id}-${m.round}-${home.slug}-${away.slug}`, leagueId: lg.id, leagueName: lg.name, leagueShort: lg.short, level: lg.level, season: primary, round: m.round, date: m.date, time: m.time };
+    const base = { id: `${lg.id}-${m.round}-${home.slug}-${away.slug}`, leagueId: lg.id, leagueName: lg.name, leagueShort: lg.short, level: lg.level, season: primary, round: m.round, date: m.date, time: m.time, venue: m.venue };
     if (m.status === "played") allMatches.push(buildMatch(base, home, away, m.hg, m.ag, m.hth, m.hta, "real"));
     else allMatches.push(makeFixture(base, home, away, "real"));
   }
-  leagues.push({ ...lg, season: primary, teamObjs });
+  leagues.push({ ...lg, season: primary, teamObjs, facts: facts || null });
 }
 
 // ---- MODELED leagues ----
@@ -553,6 +594,60 @@ for (const lg of MODELED_LEAGUES) {
     }
   });
   leagues.push({ ...lg, season: SEASON, teamObjs });
+}
+
+// ---- LOWER divisions: REAL standings (Wikipedia) + modeled players ----
+const lowerDefs = [];
+if (LOWER) {
+  (LOWER.secondDivision?.groups || []).forEach((g, i) => lowerDefs.push({
+    id: `2div-avd${i + 1}`, name: `2. divisjon avd. ${i + 1}`, short: `2.div ${i + 1}`,
+    divisionName: "2. divisjon", avdeling: `Avdeling ${i + 1}`, level: 3, color: "#2563eb", group: g,
+  }));
+  (LOWER.thirdDivision?.groups || []).forEach((g, i) => lowerDefs.push({
+    id: `3div-avd${i + 1}`, name: `3. divisjon avd. ${i + 1}`, short: `3.div ${i + 1}`,
+    divisionName: "3. divisjon", avdeling: `Avdeling ${i + 1}`, level: 4, color: "#f59e0b", group: g,
+  }));
+}
+for (const lg of lowerDefs) {
+  const rows = lg.group.table;
+  const teamObjs = rows.map((row, i) => {
+    const name = row.club;
+    const short = name.length > 12 ? name.split(/[ /]/)[0] : name;
+    const city = LOWER_CLUB_CITY[name] || CLUB_INFO[name]?.city || TSDB_CLUB[name]?.city || "Norge";
+    const crest = crestFor(name);
+    const strength = clamp(0.6 - i * (0.34 / rows.length) - (lg.level - 3) * 0.05, 0.16, 0.78);
+    const t = {
+      id: `${lg.id}__${slug(name)}`, raw: name, name, short, slug: slug(name),
+      leagueId: lg.id, leagueName: lg.name, leagueShort: lg.short, level: lg.level,
+      gender: "men", color: lg.color, dataSource: "real", season: 2025,
+      city, fylke: fylkeOf(city),
+      founded: crest.founded, stadium: crest.stadium || `${city} stadion`, capacity: crest.capacity || 2000,
+      badge: crest.badge, desc: crest.desc, strength, realStanding: row, manager: null,
+    };
+    registerTeam(t);
+    return t;
+  });
+  for (const t of teamObjs) t.squad = makeSquad(t, lg.level, "men", 2025);
+  const ids = teamObjs.map((t) => t.id);
+  const schedule = roundRobin(rng.shuffle(ids));
+  const start = new Date(Date.UTC(2025, 3, 5));
+  schedule.forEach((pairs, ri) => {
+    const d = new Date(start.getTime() + ri * 7 * 86400000);
+    const date = iso(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+    for (const [hId, aId] of pairs) {
+      const home = teamsById.get(hId), away = teamsById.get(aId);
+      const diff = home.strength - away.strength;
+      const expH = clamp(1.4 + 0.32 + diff * 2.4, 0.18, 4.8);
+      const expA = clamp(1.3 - diff * 2.1, 0.16, 3.9);
+      const hg = Math.min(8, rng.poisson(expH)), ag = Math.min(8, rng.poisson(expA));
+      let hth = 0, hta = 0;
+      for (let k = 0; k < hg; k++) if (rng.next() < 0.45) hth++;
+      for (let k = 0; k < ag; k++) if (rng.next() < 0.45) hta++;
+      const base = { id: `${lg.id}-${ri + 1}-${home.slug}-${away.slug}`, leagueId: lg.id, leagueName: lg.name, leagueShort: lg.short, level: lg.level, season: 2025, round: ri + 1, date, time: rng.pick(["13:00", "14:00", "16:00"]) };
+      allMatches.push(buildMatch(base, home, away, hg, ag, hth, hta, "modeled"));
+    }
+  });
+  leagues.push({ id: lg.id, name: lg.name, short: lg.short, divisionName: lg.divisionName, avdeling: lg.avdeling, level: lg.level, gender: "men", color: lg.color, season: 2025, teamObjs, tableReal: true });
 }
 
 // collect players
@@ -678,14 +773,18 @@ for (const t of teamsById.values()) {
   const squadPlayers = t.squad.map((p) => playerById.get(p.id));
   const wAge = weightedAge(squadPlayers.filter((p) => p.minutes > 0).map((p) => ({ age: p.age, minutes: p.minutes })));
   const avgAge = mean(squadPlayers.map((p) => p.age));
+  const rs = t.realStanding; // real Wikipedia standing for lower divisions
   teamOut.push({
     id: t.id, name: t.name, short: t.short, slug: t.slug,
     leagueId: t.leagueId, leagueName: t.leagueName, leagueShort: t.leagueShort,
     level: t.level, gender: t.gender, color: t.color, dataSource: t.dataSource,
     city: t.city, fylke: t.fylke, founded: t.founded, stadium: t.stadium, capacity: t.capacity, badge: t.badge, desc: t.desc,
-    played: ta.played, w: ta.w, d: ta.d, l: ta.l, gf: ta.gf, ga: ta.ga, gd: ta.gf - ta.ga, points: ta.points,
-    ppg: round(teamPpg.get(t.id), 2), mfPerMatch: round(ta.played ? (ta.gf - ta.ga) / ta.played : 0, 2),
-    form: ta.form.slice(-6),
+    manager: t.manager || null, tableReal: !!rs,
+    played: rs ? rs.played : ta.played, w: rs ? rs.w : ta.w, d: rs ? rs.d : ta.d, l: rs ? rs.l : ta.l,
+    gf: rs ? rs.gf : ta.gf, ga: rs ? rs.ga : ta.ga, gd: rs ? rs.gf - rs.ga : ta.gf - ta.ga, points: rs ? rs.points : ta.points,
+    ppg: round(rs ? rs.points / (rs.played || 1) : teamPpg.get(t.id), 2),
+    mfPerMatch: round(rs ? (rs.gf - rs.ga) / (rs.played || 1) : (ta.played ? (ta.gf - ta.ga) / ta.played : 0), 2),
+    form: rs ? [] : ta.form.slice(-6),
     home: { p: ta.hp, w: ta.hw, d: ta.hd, l: ta.hl }, away: { p: ta.ap, w: ta.aw, d: ta.ad, l: ta.al },
     cleanSheets: ta.cleanSheets, failedToScore: ta.failedToScore,
     longestWin: longest(ta.results, (r) => r === "W"),
@@ -717,14 +816,19 @@ for (const lg of leagues) {
   const wAgeLeague = weightedAge(lp.filter((p) => p.minutes > 0).map((p) => ({ age: p.age, minutes: p.minutes })));
   const roundsTotal = (lt.length - 1) * 2;
   const roundsPlayed = Math.max(...lm.map((m) => m.round), 0);
+  const isReal = !!(REAL_LEAGUES.find((r) => r.id === lg.id) || lg.tableReal);
+  const realGoals = lg.tableReal ? lt.reduce((s, t) => s + t.gf, 0) : goals;
+  const realMatches = lg.tableReal ? Math.round(lt.reduce((s, t) => s + t.played, 0) / 2) : lm.length;
   leagueOut.push({
     id: lg.id, name: lg.name, short: lg.short, divisionName: lg.divisionName, avdeling: lg.avdeling,
     level: lg.level, gender: lg.gender, color: lg.color,
-    dataSource: REAL_LEAGUES.find((r) => r.id === lg.id) ? "real" : "modeled",
-    season: lg.season || SEASON, teamCount: lt.length, matchCount: lm.length, roundsTotal, roundsPlayed,
-    inProgress: roundsPlayed < roundsTotal,
+    dataSource: isReal ? "real" : "modeled", tableReal: !!lg.tableReal,
+    realTopScorers: lg.facts?.topScorers || null, realAttendances: lg.facts?.attendances || null,
+    season: lg.season || SEASON, teamCount: lt.length, matchCount: realMatches, roundsTotal,
+    roundsPlayed: lg.tableReal ? roundsTotal : roundsPlayed,
+    inProgress: lg.tableReal ? false : roundsPlayed < roundsTotal,
     stats: {
-      matches: lm.length, goals, goalsPerMatch: round(goals / (lm.length || 1), 2),
+      matches: realMatches, goals: realGoals, goalsPerMatch: round(realGoals / (realMatches || 1), 2),
       homeWinPct: round((homeWins / (lm.length || 1)) * 100, 1),
       drawPct: round((draws / (lm.length || 1)) * 100, 1),
       awayWinPct: round((awayWins / (lm.length || 1)) * 100, 1),

@@ -2,7 +2,7 @@
   "name": "matchdata",
   "version": "1.0.0",
   "private": true,
-  "description": "Toppdata — advanced statistics & analytics for Norwegian football",
+  "description": "Matchdata — advanced statistics & analytics for Norwegian football",
   "scripts": {
     "predev": "node scripts/generate.mjs",
     "dev": "next dev",

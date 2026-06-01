@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { MapPin, Users, CalendarDays } from "lucide-react";
+import { MapPin, Users, CalendarDays, Goal, ArrowLeftRight } from "lucide-react";
 import * as db from "@/lib/db";
 import { getMatch } from "@/lib/matches";
 import { fmt, fmtDate, fmtWeekday, signed } from "@/lib/format";
@@ -61,7 +61,7 @@ export default async function MatchPage({ params }: { params: { id: string } }) 
 
       {m.dataSource === "real" && played && (
         <p className="mt-4 rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-4 py-2.5 text-sm text-muted-foreground">
-          <span className="font-medium text-emerald-500">Ekte resultat</span> (openfootball). Lagoppstilling, hendelser, tilskuere og dommer er <span className="font-medium text-amber-500">modellert</span>.
+          <span className="font-medium text-emerald-600 dark:text-emerald-400">Ekte resultat</span> ({league.id === "eliteserien" ? "TheSportsDB" : "openfootball"}). Lagoppstilling, hendelser, tilskuere og dommer er <span className="font-medium text-amber-500">modellert</span>.
         </p>
       )}
 
@@ -123,7 +123,7 @@ function PlayerLine({ a, bench }: { a: Appearance; bench?: boolean }) {
         {a.captain && <span className="ml-1.5 rounded bg-muted px-1 text-[9px] font-bold text-muted-foreground">K</span>}
       </span>
       <span className="flex shrink-0 items-center gap-1.5 text-xs">
-        {a.goals > 0 && <span title="Mål">{"⚽".repeat(Math.min(a.goals, 3))}</span>}
+        {a.goals > 0 && <span className="inline-flex items-center gap-0.5 text-emerald-600 dark:text-emerald-400" title="Mål"><Goal className="h-3.5 w-3.5" />{a.goals > 1 ? a.goals : ""}</span>}
         {a.yellow && <span className="inline-block h-3 w-2 rounded-[1px] bg-amber-400" title="Gult kort" />}
         {a.red && <span className="inline-block h-3 w-2 rounded-[1px] bg-rose-500" title="Rødt kort" />}
         {!dnp && (
@@ -139,7 +139,10 @@ function PlayerLine({ a, bench }: { a: Appearance; bench?: boolean }) {
 
 function Timeline({ events, homeName, awayName }: { events: MatchEvent[]; homeName: string; awayName: string }) {
   const icon = (e: MatchEvent) =>
-    e.type === "goal" ? "⚽" : e.type === "yellow" ? "🟨" : e.type === "red" ? "🟥" : "🔁";
+    e.type === "goal" ? <Goal className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+      : e.type === "yellow" ? <span className="inline-block h-3.5 w-2.5 rounded-[2px] bg-amber-400" />
+        : e.type === "red" ? <span className="inline-block h-3.5 w-2.5 rounded-[2px] bg-rose-500" />
+          : <ArrowLeftRight className="h-4 w-4 text-sky-500" />;
   const desc = (e: MatchEvent) =>
     e.type === "sub" ? <>{e.inName} <span className="text-muted-foreground">inn for</span> {e.outName}</> : e.playerName;
   return (

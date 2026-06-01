@@ -15,12 +15,12 @@ function H({ children, id }: { children: React.ReactNode; id?: string }) {
 export default function OmPage() {
   return (
     <div className="mx-auto max-w-3xl">
-      <PageHeader title="Om & metode" subtitle="Hva Toppdata er, hvor dataene kommer fra, og hvordan tallene beregnes." />
+      <PageHeader title="Om & metode" subtitle="Hva Matchdata er, hvor dataene kommer fra, og hvordan tallene beregnes." />
 
       <p className="text-muted-foreground">
-        Toppdata samler og analyserer statistikk fra norsk fotball — fra Eliteserien helt ned til lokale
-        divisjoner. Målet er å gjøre utviklingen til spillere og lag enklere å følge, særlig på nivåer hvor
-        slik statistikk tradisjonelt er vanskelig tilgjengelig.
+        Matchdata samler og analyserer statistikk fra norsk fotball — fra Eliteserien helt ned til grasrota
+        (2. og 3. divisjon). Målet er å gjøre utviklingen til spillere og lag enklere å følge, særlig på nivåer
+        hvor slik statistikk tradisjonelt er vanskelig tilgjengelig.
       </p>
 
       {/* DATA SOURCES — the honest core */}
@@ -32,11 +32,13 @@ export default function OmPage() {
         <Card className="p-4">
           <div className="mb-2 flex items-center gap-2"><DataBadge source="real" /></div>
           <p className="text-sm text-muted-foreground">
-            <strong className="text-foreground">Resultater, tabeller, kampprogram og halvtidsresultater</strong> for
-            Eliteserien og OBOS-ligaen er hentet direkte fra{" "}
+            <strong className="text-foreground">Ekte resultater og tabeller:</strong> Eliteserien {" "}
+            <strong className="text-foreground">2026 (pågående)</strong> fra{" "}
+            <a href="https://www.thesportsdb.com" target="_blank" rel="noreferrer" className="text-foreground underline">TheSportsDB</a>;
+            OBOS-ligaen 2025 + Eliteserien-historikk fra{" "}
             <a href="https://github.com/openfootball" target="_blank" rel="noreferrer" className="text-foreground underline">openfootball</a>{" "}
-            (offentlig eiendom). Klubbinfo og logoer fra{" "}
-            <a href="https://www.thesportsdb.com" target="_blank" rel="noreferrer" className="text-foreground underline">TheSportsDB</a>.
+            (offentlig eiendom); <strong className="text-foreground">2. og 3. divisjon</strong> 2025-sluttabeller fra Wikipedia.
+            Klubblogoer fra Wikidata/TheSportsDB; trenere og toppscorere fra Wikipedia.
           </p>
         </Card>
         <Card className="p-4">
