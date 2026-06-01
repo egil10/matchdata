@@ -1,0 +1,154 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --radius: 0.8rem;
+
+  /* Light theme */
+  --background: 210 40% 99%;
+  --foreground: 222 47% 11%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 47% 11%;
+  --muted: 214 32% 95%;
+  --muted-foreground: 215 18% 42%;
+  --border: 214 26% 88%;
+  --input: 214 26% 86%;
+  --primary: 201 96% 40%;
+  --primary-foreground: 0 0% 100%;
+  --accent: 262 83% 58%;
+  --accent-foreground: 0 0% 100%;
+  --ring: 201 96% 40%;
+  --success: 152 60% 38%;
+  --danger: 352 74% 50%;
+  --warning: 32 95% 44%;
+  --chart-1: 201 96% 45%;
+  --chart-2: 262 83% 62%;
+  --chart-3: 152 60% 42%;
+  --chart-4: 32 95% 50%;
+  --chart-5: 330 80% 58%;
+  --chart-6: 188 86% 40%;
+}
+
+.dark {
+  --background: 222 32% 7%;
+  --foreground: 210 20% 96%;
+  --card: 222 28% 10%;
+  --card-foreground: 210 20% 96%;
+  --popover: 222 32% 9%;
+  --popover-foreground: 210 20% 96%;
+  --muted: 220 18% 16%;
+  --muted-foreground: 216 16% 64%;
+  --border: 220 16% 19%;
+  --input: 220 16% 20%;
+  --primary: 199 95% 56%;
+  --primary-foreground: 222 47% 8%;
+  --accent: 265 90% 70%;
+  --accent-foreground: 222 47% 8%;
+  --ring: 199 95% 56%;
+  --success: 152 62% 48%;
+  --danger: 352 84% 64%;
+  --warning: 38 92% 58%;
+  --chart-1: 199 95% 58%;
+  --chart-2: 265 90% 72%;
+  --chart-3: 152 64% 52%;
+  --chart-4: 38 92% 60%;
+  --chart-5: 330 85% 66%;
+  --chart-6: 185 90% 52%;
+}
+
+* {
+  border-color: hsl(var(--border));
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11", "ss01";
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@layer base {
+  h1, h2, h3, h4 {
+    @apply tracking-tight;
+  }
+}
+
+@layer components {
+  .container-page {
+    @apply container mx-auto px-4 sm:px-6;
+  }
+  .card-surface {
+    @apply rounded-lg border border-border bg-card text-card-foreground;
+  }
+  .stat-num {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+  }
+  .text-gradient {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(
+      100deg,
+      hsl(var(--primary)),
+      hsl(var(--accent))
+    );
+  }
+  .glass {
+    background-color: hsl(var(--background) / 0.72);
+    backdrop-filter: saturate(180%) blur(12px);
+  }
+  .focus-ring {
+    @apply outline-none ring-offset-0 focus-visible:ring-2 focus-visible:ring-ring;
+  }
+  .link-underline {
+    @apply underline-offset-4 hover:underline;
+  }
+}
+
+/* Subtle grid / glow background for hero sections */
+.bg-grid {
+  background-image:
+    linear-gradient(to right, hsl(var(--border) / 0.5) 1px, transparent 1px),
+    linear-gradient(to bottom, hsl(var(--border) / 0.5) 1px, transparent 1px);
+  background-size: 36px 36px;
+  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 40%, transparent 100%);
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 40%, transparent 100%);
+}
+
+.bg-glow {
+  background:
+    radial-gradient(50% 50% at 20% 0%, hsl(var(--primary) / 0.18), transparent 70%),
+    radial-gradient(45% 45% at 85% 10%, hsl(var(--accent) / 0.16), transparent 70%);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.28);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground) / 0.45); background-clip: padding-box; }
+
+::selection {
+  background: hsl(var(--primary) / 0.28);
+}
+
+/* Recharts tweaks */
+.recharts-default-tooltip {
+  border-radius: 0.6rem !important;
+  border: 1px solid hsl(var(--border)) !important;
+  background: hsl(var(--popover)) !important;
+}
+.recharts-cartesian-axis-tick-value { font-size: 11px; }

@@ -1,0 +1,1790 @@
+[
+  {
+    "id": "eliteserien",
+    "name": "Eliteserien",
+    "short": "Eliteserien",
+    "divisionName": "Eliteserien",
+    "avdeling": null,
+    "level": 1,
+    "gender": "men",
+    "color": "#0ea5e9",
+    "dataSource": "real",
+    "season": 2024,
+    "teamCount": 16,
+    "matchCount": 240,
+    "roundsTotal": 30,
+    "roundsPlayed": 30,
+    "inProgress": false,
+    "stats": {
+      "matches": 240,
+      "goals": 681,
+      "goalsPerMatch": 2.84,
+      "homeWinPct": 41.7,
+      "drawPct": 25,
+      "awayWinPct": 33.3,
+      "cards": 833,
+      "cardsPerMatch": 3.47,
+      "avgAgeWeighted": 24.4,
+      "players": 368
+    },
+    "ageAnalysis": [
+      {
+        "teamId": "eliteserien__haugesund",
+        "name": "Haugesund",
+        "short": "FKH",
+        "weightedAvgAge": 23.5,
+        "avgAge": 24.1
+      },
+      {
+        "teamId": "eliteserien__tromso",
+        "name": "Tromsø",
+        "short": "TIL",
+        "weightedAvgAge": 23.5,
+        "avgAge": 23.8
+      },
+      {
+        "teamId": "eliteserien__viking",
+        "name": "Viking",
+        "short": "Viking",
+        "weightedAvgAge": 23.6,
+        "avgAge": 23.5
+      },
+      {
+        "teamId": "eliteserien__rosenborg",
+        "name": "Rosenborg",
+        "short": "RBK",
+        "weightedAvgAge": 23.8,
+        "avgAge": 23.4
+      },
+      {
+        "teamId": "eliteserien__brann",
+        "name": "Brann",
+        "short": "Brann",
+        "weightedAvgAge": 23.8,
+        "avgAge": 24
+      },
+      {
+        "teamId": "eliteserien__molde",
+        "name": "Molde",
+        "short": "Molde",
+        "weightedAvgAge": 23.9,
+        "avgAge": 23.6
+      },
+      {
+        "teamId": "eliteserien__sarpsborg-08",
+        "name": "Sarpsborg 08",
+        "short": "Sarpsborg",
+        "weightedAvgAge": 24,
+        "avgAge": 24.3
+      },
+      {
+        "teamId": "eliteserien__hamkam",
+        "name": "HamKam",
+        "short": "HamKam",
+        "weightedAvgAge": 24,
+        "avgAge": 24.3
+      },
+      {
+        "teamId": "eliteserien__sandefjord",
+        "name": "Sandefjord",
+        "short": "Sandefjord",
+        "weightedAvgAge": 24.2,
+        "avgAge": 24.1
+      },
+      {
+        "teamId": "eliteserien__kristiansund",
+        "name": "Kristiansund",
+        "short": "KBK",
+        "weightedAvgAge": 24.6,
+        "avgAge": 24.4
+      },
+      {
+        "teamId": "eliteserien__bodo-glimt",
+        "name": "Bodø/Glimt",
+        "short": "Glimt",
+        "weightedAvgAge": 24.7,
+        "avgAge": 24.3
+      },
+      {
+        "teamId": "eliteserien__stromsgodset",
+        "name": "Strømsgodset",
+        "short": "Godset",
+        "weightedAvgAge": 24.8,
+        "avgAge": 24.7
+      },
+      {
+        "teamId": "eliteserien__kfum-oslo",
+        "name": "KFUM Oslo",
+        "short": "KFUM",
+        "weightedAvgAge": 24.9,
+        "avgAge": 24.4
+      },
+      {
+        "teamId": "eliteserien__odd",
+        "name": "Odd",
+        "short": "Odd",
+        "weightedAvgAge": 25.3,
+        "avgAge": 25.1
+      },
+      {
+        "teamId": "eliteserien__fredrikstad",
+        "name": "Fredrikstad",
+        "short": "FFK",
+        "weightedAvgAge": 25.3,
+        "avgAge": 24.6
+      },
+      {
+        "teamId": "eliteserien__lillestrom",
+        "name": "Lillestrøm",
+        "short": "LSK",
+        "weightedAvgAge": 25.9,
+        "avgAge": 25.6
+      }
+    ],
+    "goalsByRound": [
+      {
+        "round": 1,
+        "goals": 25,
+        "matches": 8,
+        "home": 3,
+        "away": 4,
+        "draw": 1
+      },
+      {
+        "round": 2,
+        "goals": 13,
+        "matches": 8,
+        "home": 2,
+        "away": 5,
+        "draw": 1
+      },
+      {
+        "round": 3,
+        "goals": 23,
+        "matches": 8,
+        "home": 2,
+        "away": 3,
+        "draw": 3
+      },
+      {
+        "round": 4,
+        "goals": 15,
+        "matches": 8,
+        "home": 2,
+        "away": 4,
+        "draw": 2
+      },
+      {
+        "round": 5,
+        "goals": 23,
+        "matches": 8,
+        "home": 2,
+        "away": 2,
+        "draw": 4
+      },
+      {
+        "round": 6,
+        "goals": 17,
+        "matches": 8,
+        "home": 5,
+        "away": 2,
+        "draw": 1
+      },
+      {
+        "round": 7,
+        "goals": 31,
+        "matches": 8,
+        "home": 2,
+        "away": 4,
+        "draw": 2
+      },
+      {
+        "round": 8,
+        "goals": 34,
+        "matches": 8,
+        "home": 4,
+        "away": 4,
+        "draw": 0
+      },
+      {
+        "round": 9,
+        "goals": 24,
+        "matches": 8,
+        "home": 3,
+        "away": 3,
+        "draw": 2
+      },
+      {
+        "round": 10,
+        "goals": 24,
+        "matches": 8,
+        "home": 4,
+        "away": 2,
+        "draw": 2
+      },
+      {
+        "round": 11,
+        "goals": 25,
+        "matches": 8,
+        "home": 1,
+        "away": 3,
+        "draw": 4
+      },
+      {
+        "round": 12,
+        "goals": 20,
+        "matches": 8,
+        "home": 3,
+        "away": 3,
+        "draw": 2
+      },
+      {
+        "round": 13,
+        "goals": 24,
+        "matches": 8,
+        "home": 4,
+        "away": 2,
+        "draw": 2
+      },
+      {
+        "round": 14,
+        "goals": 22,
+        "matches": 8,
+        "home": 4,
+        "away": 2,
+        "draw": 2
+      },
+      {
+        "round": 15,
+        "goals": 21,
+        "matches": 8,
+        "home": 4,
+        "away": 3,
+        "draw": 1
+      },
+      {
+        "round": 16,
+        "goals": 21,
+        "matches": 8,
+        "home": 4,
+        "away": 0,
+        "draw": 4
+      },
+      {
+        "round": 17,
+        "goals": 27,
+        "matches": 8,
+        "home": 4,
+        "away": 2,
+        "draw": 2
+      },
+      {
+        "round": 18,
+        "goals": 19,
+        "matches": 8,
+        "home": 3,
+        "away": 2,
+        "draw": 3
+      },
+      {
+        "round": 19,
+        "goals": 24,
+        "matches": 8,
+        "home": 3,
+        "away": 3,
+        "draw": 2
+      },
+      {
+        "round": 20,
+        "goals": 25,
+        "matches": 8,
+        "home": 6,
+        "away": 2,
+        "draw": 0
+      },
+      {
+        "round": 21,
+        "goals": 22,
+        "matches": 8,
+        "home": 3,
+        "away": 2,
+        "draw": 3
+      },
+      {
+        "round": 22,
+        "goals": 20,
+        "matches": 8,
+        "home": 4,
+        "away": 1,
+        "draw": 3
+      },
+      {
+        "round": 23,
+        "goals": 27,
+        "matches": 8,
+        "home": 6,
+        "away": 0,
+        "draw": 2
+      },
+      {
+        "round": 24,
+        "goals": 26,
+        "matches": 8,
+        "home": 2,
+        "away": 5,
+        "draw": 1
+      },
+      {
+        "round": 25,
+        "goals": 15,
+        "matches": 8,
+        "home": 1,
+        "away": 3,
+        "draw": 4
+      },
+      {
+        "round": 26,
+        "goals": 24,
+        "matches": 8,
+        "home": 5,
+        "away": 3,
+        "draw": 0
+      },
+      {
+        "round": 27,
+        "goals": 27,
+        "matches": 8,
+        "home": 2,
+        "away": 3,
+        "draw": 3
+      },
+      {
+        "round": 28,
+        "goals": 18,
+        "matches": 8,
+        "home": 4,
+        "away": 2,
+        "draw": 2
+      },
+      {
+        "round": 29,
+        "goals": 22,
+        "matches": 8,
+        "home": 4,
+        "away": 3,
+        "draw": 1
+      },
+      {
+        "round": 30,
+        "goals": 23,
+        "matches": 8,
+        "home": 4,
+        "away": 3,
+        "draw": 1
+      }
+    ]
+  },
+  {
+    "id": "obos-ligaen",
+    "name": "OBOS-ligaen",
+    "short": "OBOS",
+    "divisionName": "OBOS-ligaen (1. divisjon)",
+    "avdeling": null,
+    "level": 2,
+    "gender": "men",
+    "color": "#16a34a",
+    "dataSource": "real",
+    "season": 2025,
+    "teamCount": 16,
+    "matchCount": 40,
+    "roundsTotal": 30,
+    "roundsPlayed": 5,
+    "inProgress": true,
+    "stats": {
+      "matches": 40,
+      "goals": 122,
+      "goalsPerMatch": 3.05,
+      "homeWinPct": 42.5,
+      "drawPct": 17.5,
+      "awayWinPct": 40,
+      "cards": 123,
+      "cardsPerMatch": 3.08,
+      "avgAgeWeighted": 23.5,
+      "players": 368
+    },
+    "ageAnalysis": [
+      {
+        "teamId": "obos-ligaen__lyn",
+        "name": "Lyn",
+        "short": "Lyn",
+        "weightedAvgAge": 20.5,
+        "avgAge": 21.7
+      },
+      {
+        "teamId": "obos-ligaen__skeid",
+        "name": "Skeid",
+        "short": "Skeid",
+        "weightedAvgAge": 22.3,
+        "avgAge": 23.5
+      },
+      {
+        "teamId": "obos-ligaen__raufoss",
+        "name": "Raufoss",
+        "short": "Raufoss",
+        "weightedAvgAge": 22.6,
+        "avgAge": 22.8
+      },
+      {
+        "teamId": "obos-ligaen__lillestrom",
+        "name": "Lillestrøm",
+        "short": "LSK",
+        "weightedAvgAge": 22.8,
+        "avgAge": 21.8
+      },
+      {
+        "teamId": "obos-ligaen__mjondalen",
+        "name": "Mjøndalen",
+        "short": "MIF",
+        "weightedAvgAge": 23.1,
+        "avgAge": 23.3
+      },
+      {
+        "teamId": "obos-ligaen__aalesund",
+        "name": "Aalesund",
+        "short": "AaFK",
+        "weightedAvgAge": 23.1,
+        "avgAge": 23
+      },
+      {
+        "teamId": "obos-ligaen__stabaek",
+        "name": "Stabæk",
+        "short": "Stabæk",
+        "weightedAvgAge": 23.4,
+        "avgAge": 22.8
+      },
+      {
+        "teamId": "obos-ligaen__start",
+        "name": "Start",
+        "short": "Start",
+        "weightedAvgAge": 23.6,
+        "avgAge": 24
+      },
+      {
+        "teamId": "obos-ligaen__hodd",
+        "name": "Hødd",
+        "short": "Hødd",
+        "weightedAvgAge": 23.9,
+        "avgAge": 24.3
+      },
+      {
+        "teamId": "obos-ligaen__egersund",
+        "name": "Egersund",
+        "short": "Egersund",
+        "weightedAvgAge": 24,
+        "avgAge": 23.8
+      },
+      {
+        "teamId": "obos-ligaen__kongsvinger",
+        "name": "Kongsvinger",
+        "short": "KIL",
+        "weightedAvgAge": 24,
+        "avgAge": 23.7
+      },
+      {
+        "teamId": "obos-ligaen__asane",
+        "name": "Åsane",
+        "short": "Åsane",
+        "weightedAvgAge": 24.1,
+        "avgAge": 24.6
+      },
+      {
+        "teamId": "obos-ligaen__moss",
+        "name": "Moss",
+        "short": "Moss",
+        "weightedAvgAge": 24.1,
+        "avgAge": 24.3
+      },
+      {
+        "teamId": "obos-ligaen__sogndal",
+        "name": "Sogndal",
+        "short": "Sogndal",
+        "weightedAvgAge": 24.5,
+        "avgAge": 24.1
+      },
+      {
+        "teamId": "obos-ligaen__ranheim",
+        "name": "Ranheim",
+        "short": "Ranheim",
+        "weightedAvgAge": 24.6,
+        "avgAge": 25
+      },
+      {
+        "teamId": "obos-ligaen__odd",
+        "name": "Odd",
+        "short": "Odd",
+        "weightedAvgAge": 25.1,
+        "avgAge": 24.9
+      }
+    ],
+    "goalsByRound": [
+      {
+        "round": 1,
+        "goals": 27,
+        "matches": 8,
+        "home": 4,
+        "away": 1,
+        "draw": 3
+      },
+      {
+        "round": 2,
+        "goals": 21,
+        "matches": 8,
+        "home": 2,
+        "away": 5,
+        "draw": 1
+      },
+      {
+        "round": 3,
+        "goals": 30,
+        "matches": 8,
+        "home": 4,
+        "away": 3,
+        "draw": 1
+      },
+      {
+        "round": 4,
+        "goals": 24,
+        "matches": 8,
+        "home": 2,
+        "away": 5,
+        "draw": 1
+      },
+      {
+        "round": 5,
+        "goals": 20,
+        "matches": 8,
+        "home": 5,
+        "away": 2,
+        "draw": 1
+      }
+    ]
+  },
+  {
+    "id": "postnord-avd1",
+    "name": "PostNord-ligaen avd. 1",
+    "short": "PostNord 1",
+    "divisionName": "PostNord-ligaen (2. divisjon)",
+    "avdeling": "Avdeling 1",
+    "level": 3,
+    "gender": "men",
+    "color": "#2563eb",
+    "dataSource": "modeled",
+    "season": 2024,
+    "teamCount": 14,
+    "matchCount": 182,
+    "roundsTotal": 26,
+    "roundsPlayed": 26,
+    "inProgress": false,
+    "stats": {
+      "matches": 182,
+      "goals": 501,
+      "goalsPerMatch": 2.75,
+      "homeWinPct": 51.1,
+      "drawPct": 22,
+      "awayWinPct": 26.9,
+      "cards": 581,
+      "cardsPerMatch": 3.19,
+      "avgAgeWeighted": 22.6,
+      "players": 322
+    },
+    "ageAnalysis": [
+      {
+        "teamId": "postnord-avd1__sandnes-ulf",
+        "name": "Sandnes Ulf",
+        "short": "Sandnes Ulf",
+        "weightedAvgAge": 21.5,
+        "avgAge": 21.9
+      },
+      {
+        "teamId": "postnord-avd1__pors",
+        "name": "Pors",
+        "short": "Pors",
+        "weightedAvgAge": 22,
+        "avgAge": 21.4
+      },
+      {
+        "teamId": "postnord-avd1__lysekloster",
+        "name": "Lysekloster",
+        "short": "Lysekloster",
+        "weightedAvgAge": 22.3,
+        "avgAge": 22.3
+      },
+      {
+        "teamId": "postnord-avd1__vard-haugesund",
+        "name": "Vard Haugesund",
+        "short": "Vard",
+        "weightedAvgAge": 22.4,
+        "avgAge": 21.9
+      },
+      {
+        "teamId": "postnord-avd1__brattvag",
+        "name": "Brattvåg",
+        "short": "Brattvåg",
+        "weightedAvgAge": 22.5,
+        "avgAge": 21.9
+      },
+      {
+        "teamId": "postnord-avd1__sandviken",
+        "name": "Sandviken",
+        "short": "Sandviken",
+        "weightedAvgAge": 22.6,
+        "avgAge": 22.4
+      },
+      {
+        "teamId": "postnord-avd1__brann-2",
+        "name": "Brann 2",
+        "short": "Brann 2",
+        "weightedAvgAge": 22.8,
+        "avgAge": 22.7
+      },
+      {
+        "teamId": "postnord-avd1__jerv",
+        "name": "Jerv",
+        "short": "Jerv",
+        "weightedAvgAge": 22.8,
+        "avgAge": 22.6
+      },
+      {
+        "teamId": "postnord-avd1__notodden",
+        "name": "Notodden",
+        "short": "Notodden",
+        "weightedAvgAge": 22.8,
+        "avgAge": 23.1
+      },
+      {
+        "teamId": "postnord-avd1__arendal",
+        "name": "Arendal",
+        "short": "Arendal",
+        "weightedAvgAge": 23,
+        "avgAge": 23.5
+      },
+      {
+        "teamId": "postnord-avd1__eik-tonsberg",
+        "name": "Eik Tønsberg",
+        "short": "Eik",
+        "weightedAvgAge": 23,
+        "avgAge": 23.1
+      },
+      {
+        "teamId": "postnord-avd1__traeff",
+        "name": "Træff",
+        "short": "Træff",
+        "weightedAvgAge": 23,
+        "avgAge": 23.3
+      },
+      {
+        "teamId": "postnord-avd1__floy",
+        "name": "Fløy",
+        "short": "Fløy",
+        "weightedAvgAge": 23.2,
+        "avgAge": 23.2
+      },
+      {
+        "teamId": "postnord-avd1__sotra",
+        "name": "Sotra",
+        "short": "Sotra",
+        "weightedAvgAge": 23.4,
+        "avgAge": 23
+      }
+    ],
+    "goalsByRound": [
+      {
+        "round": 1,
+        "goals": 13,
+        "matches": 7,
+        "home": 2,
+        "away": 4,
+        "draw": 1
+      },
+      {
+        "round": 2,
+        "goals": 20,
+        "matches": 7,
+        "home": 4,
+        "away": 1,
+        "draw": 2
+      },
+      {
+        "round": 3,
+        "goals": 18,
+        "matches": 7,
+        "home": 3,
+        "away": 1,
+        "draw": 3
+      },
+      {
+        "round": 4,
+        "goals": 14,
+        "matches": 7,
+        "home": 4,
+        "away": 3,
+        "draw": 0
+      },
+      {
+        "round": 5,
+        "goals": 24,
+        "matches": 7,
+        "home": 2,
+        "away": 2,
+        "draw": 3
+      },
+      {
+        "round": 6,
+        "goals": 25,
+        "matches": 7,
+        "home": 4,
+        "away": 3,
+        "draw": 0
+      },
+      {
+        "round": 7,
+        "goals": 18,
+        "matches": 7,
+        "home": 5,
+        "away": 1,
+        "draw": 1
+      },
+      {
+        "round": 8,
+        "goals": 27,
+        "matches": 7,
+        "home": 1,
+        "away": 3,
+        "draw": 3
+      },
+      {
+        "round": 9,
+        "goals": 15,
+        "matches": 7,
+        "home": 4,
+        "away": 1,
+        "draw": 2
+      },
+      {
+        "round": 10,
+        "goals": 17,
+        "matches": 7,
+        "home": 5,
+        "away": 1,
+        "draw": 1
+      },
+      {
+        "round": 11,
+        "goals": 12,
+        "matches": 7,
+        "home": 2,
+        "away": 3,
+        "draw": 2
+      },
+      {
+        "round": 12,
+        "goals": 19,
+        "matches": 7,
+        "home": 6,
+        "away": 1,
+        "draw": 0
+      },
+      {
+        "round": 13,
+        "goals": 18,
+        "matches": 7,
+        "home": 3,
+        "away": 2,
+        "draw": 2
+      },
+      {
+        "round": 14,
+        "goals": 21,
+        "matches": 7,
+        "home": 2,
+        "away": 4,
+        "draw": 1
+      },
+      {
+        "round": 15,
+        "goals": 26,
+        "matches": 7,
+        "home": 5,
+        "away": 2,
+        "draw": 0
+      },
+      {
+        "round": 16,
+        "goals": 15,
+        "matches": 7,
+        "home": 4,
+        "away": 1,
+        "draw": 2
+      },
+      {
+        "round": 17,
+        "goals": 26,
+        "matches": 7,
+        "home": 4,
+        "away": 2,
+        "draw": 1
+      },
+      {
+        "round": 18,
+        "goals": 22,
+        "matches": 7,
+        "home": 4,
+        "away": 2,
+        "draw": 1
+      },
+      {
+        "round": 19,
+        "goals": 19,
+        "matches": 7,
+        "home": 2,
+        "away": 2,
+        "draw": 3
+      },
+      {
+        "round": 20,
+        "goals": 20,
+        "matches": 7,
+        "home": 4,
+        "away": 1,
+        "draw": 2
+      },
+      {
+        "round": 21,
+        "goals": 19,
+        "matches": 7,
+        "home": 3,
+        "away": 3,
+        "draw": 1
+      },
+      {
+        "round": 22,
+        "goals": 13,
+        "matches": 7,
+        "home": 4,
+        "away": 1,
+        "draw": 2
+      },
+      {
+        "round": 23,
+        "goals": 17,
+        "matches": 7,
+        "home": 3,
+        "away": 1,
+        "draw": 3
+      },
+      {
+        "round": 24,
+        "goals": 18,
+        "matches": 7,
+        "home": 4,
+        "away": 1,
+        "draw": 2
+      },
+      {
+        "round": 25,
+        "goals": 16,
+        "matches": 7,
+        "home": 3,
+        "away": 3,
+        "draw": 1
+      },
+      {
+        "round": 26,
+        "goals": 29,
+        "matches": 7,
+        "home": 6,
+        "away": 0,
+        "draw": 1
+      }
+    ]
+  },
+  {
+    "id": "3div-avd1",
+    "name": "3. divisjon avd. 1",
+    "short": "3. div 1",
+    "divisionName": "3. divisjon",
+    "avdeling": "Avdeling 1",
+    "level": 4,
+    "gender": "men",
+    "color": "#f59e0b",
+    "dataSource": "modeled",
+    "season": 2024,
+    "teamCount": 14,
+    "matchCount": 182,
+    "roundsTotal": 26,
+    "roundsPlayed": 26,
+    "inProgress": false,
+    "stats": {
+      "matches": 182,
+      "goals": 528,
+      "goalsPerMatch": 2.9,
+      "homeWinPct": 47.8,
+      "drawPct": 22.5,
+      "awayWinPct": 29.7,
+      "cards": 579,
+      "cardsPerMatch": 3.18,
+      "avgAgeWeighted": 21.9,
+      "players": 322
+    },
+    "ageAnalysis": [
+      {
+        "teamId": "3div-avd1__krakeroy",
+        "name": "Kråkerøy",
+        "short": "Kråkerøy",
+        "weightedAvgAge": 20.3,
+        "avgAge": 20.7
+      },
+      {
+        "teamId": "3div-avd1__drobak-frogn",
+        "name": "Drøbak-Frogn",
+        "short": "Drøbak-Frogn",
+        "weightedAvgAge": 20.4,
+        "avgAge": 21
+      },
+      {
+        "teamId": "3div-avd1__frigg",
+        "name": "Frigg",
+        "short": "Frigg",
+        "weightedAvgAge": 20.8,
+        "avgAge": 21.3
+      },
+      {
+        "teamId": "3div-avd1__nordstrand",
+        "name": "Nordstrand",
+        "short": "Nordstrand",
+        "weightedAvgAge": 20.9,
+        "avgAge": 21.3
+      },
+      {
+        "teamId": "3div-avd1__ready",
+        "name": "Ready",
+        "short": "Ready",
+        "weightedAvgAge": 21.4,
+        "avgAge": 21.6
+      },
+      {
+        "teamId": "3div-avd1__raelingen",
+        "name": "Rælingen",
+        "short": "Rælingen",
+        "weightedAvgAge": 21.6,
+        "avgAge": 22.2
+      },
+      {
+        "teamId": "3div-avd1__lorenskog",
+        "name": "Lørenskog",
+        "short": "Lørenskog",
+        "weightedAvgAge": 21.8,
+        "avgAge": 22.2
+      },
+      {
+        "teamId": "3div-avd1__rade",
+        "name": "Råde",
+        "short": "Råde",
+        "weightedAvgAge": 22.3,
+        "avgAge": 22.3
+      },
+      {
+        "teamId": "3div-avd1__as",
+        "name": "Ås",
+        "short": "Ås",
+        "weightedAvgAge": 22.4,
+        "avgAge": 22.9
+      },
+      {
+        "teamId": "3div-avd1__sprint-jeloy",
+        "name": "Sprint-Jeløy",
+        "short": "Sprint-Jeløy",
+        "weightedAvgAge": 22.7,
+        "avgAge": 22.7
+      },
+      {
+        "teamId": "3div-avd1__oppsal",
+        "name": "Oppsal",
+        "short": "Oppsal",
+        "weightedAvgAge": 23,
+        "avgAge": 22.5
+      },
+      {
+        "teamId": "3div-avd1__skjetten",
+        "name": "Skjetten",
+        "short": "Skjetten",
+        "weightedAvgAge": 23,
+        "avgAge": 22.3
+      },
+      {
+        "teamId": "3div-avd1__korsvoll",
+        "name": "Korsvoll",
+        "short": "Korsvoll",
+        "weightedAvgAge": 23.1,
+        "avgAge": 23.2
+      },
+      {
+        "teamId": "3div-avd1__fram-larvik",
+        "name": "Fram Larvik",
+        "short": "Fram",
+        "weightedAvgAge": 23.5,
+        "avgAge": 23.3
+      }
+    ],
+    "goalsByRound": [
+      {
+        "round": 1,
+        "goals": 24,
+        "matches": 7,
+        "home": 4,
+        "away": 3,
+        "draw": 0
+      },
+      {
+        "round": 2,
+        "goals": 22,
+        "matches": 7,
+        "home": 3,
+        "away": 3,
+        "draw": 1
+      },
+      {
+        "round": 3,
+        "goals": 10,
+        "matches": 7,
+        "home": 4,
+        "away": 2,
+        "draw": 1
+      },
+      {
+        "round": 4,
+        "goals": 31,
+        "matches": 7,
+        "home": 3,
+        "away": 3,
+        "draw": 1
+      },
+      {
+        "round": 5,
+        "goals": 15,
+        "matches": 7,
+        "home": 4,
+        "away": 2,
+        "draw": 1
+      },
+      {
+        "round": 6,
+        "goals": 19,
+        "matches": 7,
+        "home": 3,
+        "away": 2,
+        "draw": 2
+      },
+      {
+        "round": 7,
+        "goals": 20,
+        "matches": 7,
+        "home": 4,
+        "away": 3,
+        "draw": 0
+      },
+      {
+        "round": 8,
+        "goals": 14,
+        "matches": 7,
+        "home": 3,
+        "away": 3,
+        "draw": 1
+      },
+      {
+        "round": 9,
+        "goals": 17,
+        "matches": 7,
+        "home": 1,
+        "away": 2,
+        "draw": 4
+      },
+      {
+        "round": 10,
+        "goals": 26,
+        "matches": 7,
+        "home": 6,
+        "away": 0,
+        "draw": 1
+      },
+      {
+        "round": 11,
+        "goals": 21,
+        "matches": 7,
+        "home": 4,
+        "away": 2,
+        "draw": 1
+      },
+      {
+        "round": 12,
+        "goals": 17,
+        "matches": 7,
+        "home": 4,
+        "away": 0,
+        "draw": 3
+      },
+      {
+        "round": 13,
+        "goals": 24,
+        "matches": 7,
+        "home": 6,
+        "away": 1,
+        "draw": 0
+      },
+      {
+        "round": 14,
+        "goals": 22,
+        "matches": 7,
+        "home": 1,
+        "away": 3,
+        "draw": 3
+      },
+      {
+        "round": 15,
+        "goals": 18,
+        "matches": 7,
+        "home": 3,
+        "away": 3,
+        "draw": 1
+      },
+      {
+        "round": 16,
+        "goals": 28,
+        "matches": 7,
+        "home": 1,
+        "away": 5,
+        "draw": 1
+      },
+      {
+        "round": 17,
+        "goals": 24,
+        "matches": 7,
+        "home": 5,
+        "away": 1,
+        "draw": 1
+      },
+      {
+        "round": 18,
+        "goals": 20,
+        "matches": 7,
+        "home": 3,
+        "away": 2,
+        "draw": 2
+      },
+      {
+        "round": 19,
+        "goals": 20,
+        "matches": 7,
+        "home": 5,
+        "away": 1,
+        "draw": 1
+      },
+      {
+        "round": 20,
+        "goals": 22,
+        "matches": 7,
+        "home": 3,
+        "away": 2,
+        "draw": 2
+      },
+      {
+        "round": 21,
+        "goals": 23,
+        "matches": 7,
+        "home": 2,
+        "away": 4,
+        "draw": 1
+      },
+      {
+        "round": 22,
+        "goals": 20,
+        "matches": 7,
+        "home": 4,
+        "away": 1,
+        "draw": 2
+      },
+      {
+        "round": 23,
+        "goals": 20,
+        "matches": 7,
+        "home": 3,
+        "away": 4,
+        "draw": 0
+      },
+      {
+        "round": 24,
+        "goals": 19,
+        "matches": 7,
+        "home": 4,
+        "away": 1,
+        "draw": 2
+      },
+      {
+        "round": 25,
+        "goals": 12,
+        "matches": 7,
+        "home": 1,
+        "away": 1,
+        "draw": 5
+      },
+      {
+        "round": 26,
+        "goals": 20,
+        "matches": 7,
+        "home": 3,
+        "away": 0,
+        "draw": 4
+      }
+    ]
+  },
+  {
+    "id": "toppserien",
+    "name": "Toppserien",
+    "short": "Toppserien",
+    "divisionName": "Toppserien",
+    "avdeling": null,
+    "level": 1,
+    "gender": "women",
+    "color": "#db2777",
+    "dataSource": "modeled",
+    "season": 2024,
+    "teamCount": 10,
+    "matchCount": 90,
+    "roundsTotal": 18,
+    "roundsPlayed": 18,
+    "inProgress": false,
+    "stats": {
+      "matches": 90,
+      "goals": 247,
+      "goalsPerMatch": 2.74,
+      "homeWinPct": 50,
+      "drawPct": 26.7,
+      "awayWinPct": 23.3,
+      "cards": 289,
+      "cardsPerMatch": 3.21,
+      "avgAgeWeighted": 24.5,
+      "players": 230
+    },
+    "ageAnalysis": [
+      {
+        "teamId": "toppserien__honefoss",
+        "name": "Hønefoss",
+        "short": "Hønefoss",
+        "weightedAvgAge": 23.4,
+        "avgAge": 24.7
+      },
+      {
+        "teamId": "toppserien__roa",
+        "name": "Røa",
+        "short": "Røa",
+        "weightedAvgAge": 23.7,
+        "avgAge": 23.8
+      },
+      {
+        "teamId": "toppserien__valerenga",
+        "name": "Vålerenga",
+        "short": "VIF",
+        "weightedAvgAge": 23.7,
+        "avgAge": 23.6
+      },
+      {
+        "teamId": "toppserien__lsk-kvinner",
+        "name": "LSK Kvinner",
+        "short": "LSK",
+        "weightedAvgAge": 23.8,
+        "avgAge": 23.9
+      },
+      {
+        "teamId": "toppserien__stabaek",
+        "name": "Stabæk",
+        "short": "Stabæk",
+        "weightedAvgAge": 23.9,
+        "avgAge": 24
+      },
+      {
+        "teamId": "toppserien__kolbotn",
+        "name": "Kolbotn",
+        "short": "Kolbotn",
+        "weightedAvgAge": 24.7,
+        "avgAge": 23.9
+      },
+      {
+        "teamId": "toppserien__lyn",
+        "name": "Lyn",
+        "short": "Lyn",
+        "weightedAvgAge": 24.7,
+        "avgAge": 24.5
+      },
+      {
+        "teamId": "toppserien__brann",
+        "name": "Brann",
+        "short": "Brann",
+        "weightedAvgAge": 25.2,
+        "avgAge": 25.6
+      },
+      {
+        "teamId": "toppserien__rosenborg",
+        "name": "Rosenborg",
+        "short": "RBK",
+        "weightedAvgAge": 25.6,
+        "avgAge": 25.2
+      },
+      {
+        "teamId": "toppserien__bodo-glimt",
+        "name": "Bodø/Glimt",
+        "short": "Glimt",
+        "weightedAvgAge": 25.8,
+        "avgAge": 25.3
+      }
+    ],
+    "goalsByRound": [
+      {
+        "round": 1,
+        "goals": 17,
+        "matches": 5,
+        "home": 2,
+        "away": 2,
+        "draw": 1
+      },
+      {
+        "round": 2,
+        "goals": 12,
+        "matches": 5,
+        "home": 3,
+        "away": 0,
+        "draw": 2
+      },
+      {
+        "round": 3,
+        "goals": 16,
+        "matches": 5,
+        "home": 3,
+        "away": 1,
+        "draw": 1
+      },
+      {
+        "round": 4,
+        "goals": 13,
+        "matches": 5,
+        "home": 1,
+        "away": 2,
+        "draw": 2
+      },
+      {
+        "round": 5,
+        "goals": 19,
+        "matches": 5,
+        "home": 1,
+        "away": 3,
+        "draw": 1
+      },
+      {
+        "round": 6,
+        "goals": 12,
+        "matches": 5,
+        "home": 3,
+        "away": 1,
+        "draw": 1
+      },
+      {
+        "round": 7,
+        "goals": 6,
+        "matches": 5,
+        "home": 1,
+        "away": 1,
+        "draw": 3
+      },
+      {
+        "round": 8,
+        "goals": 13,
+        "matches": 5,
+        "home": 3,
+        "away": 0,
+        "draw": 2
+      },
+      {
+        "round": 9,
+        "goals": 9,
+        "matches": 5,
+        "home": 3,
+        "away": 1,
+        "draw": 1
+      },
+      {
+        "round": 10,
+        "goals": 12,
+        "matches": 5,
+        "home": 3,
+        "away": 1,
+        "draw": 1
+      },
+      {
+        "round": 11,
+        "goals": 10,
+        "matches": 5,
+        "home": 2,
+        "away": 2,
+        "draw": 1
+      },
+      {
+        "round": 12,
+        "goals": 20,
+        "matches": 5,
+        "home": 2,
+        "away": 3,
+        "draw": 0
+      },
+      {
+        "round": 13,
+        "goals": 17,
+        "matches": 5,
+        "home": 3,
+        "away": 1,
+        "draw": 1
+      },
+      {
+        "round": 14,
+        "goals": 18,
+        "matches": 5,
+        "home": 4,
+        "away": 1,
+        "draw": 0
+      },
+      {
+        "round": 15,
+        "goals": 17,
+        "matches": 5,
+        "home": 3,
+        "away": 0,
+        "draw": 2
+      },
+      {
+        "round": 16,
+        "goals": 14,
+        "matches": 5,
+        "home": 4,
+        "away": 1,
+        "draw": 0
+      },
+      {
+        "round": 17,
+        "goals": 11,
+        "matches": 5,
+        "home": 2,
+        "away": 1,
+        "draw": 2
+      },
+      {
+        "round": 18,
+        "goals": 11,
+        "matches": 5,
+        "home": 2,
+        "away": 0,
+        "draw": 3
+      }
+    ]
+  },
+  {
+    "id": "1div-kvinner",
+    "name": "1. divisjon kvinner",
+    "short": "1. div K",
+    "divisionName": "1. divisjon kvinner",
+    "avdeling": null,
+    "level": 2,
+    "gender": "women",
+    "color": "#a855f7",
+    "dataSource": "modeled",
+    "season": 2024,
+    "teamCount": 12,
+    "matchCount": 132,
+    "roundsTotal": 22,
+    "roundsPlayed": 22,
+    "inProgress": false,
+    "stats": {
+      "matches": 132,
+      "goals": 396,
+      "goalsPerMatch": 3,
+      "homeWinPct": 43.9,
+      "drawPct": 23.5,
+      "awayWinPct": 32.6,
+      "cards": 455,
+      "cardsPerMatch": 3.45,
+      "avgAgeWeighted": 23.7,
+      "players": 276
+    },
+    "ageAnalysis": [
+      {
+        "teamId": "1div-kvinner__amazon-grimstad",
+        "name": "Amazon Grimstad",
+        "short": "Amazon",
+        "weightedAvgAge": 22.5,
+        "avgAge": 22.1
+      },
+      {
+        "teamId": "1div-kvinner__tertnes",
+        "name": "Tertnes",
+        "short": "Tertnes",
+        "weightedAvgAge": 22.5,
+        "avgAge": 22.9
+      },
+      {
+        "teamId": "1div-kvinner__grei",
+        "name": "Grei",
+        "short": "Grei",
+        "weightedAvgAge": 23,
+        "avgAge": 23.5
+      },
+      {
+        "teamId": "1div-kvinner__medkila",
+        "name": "Medkila",
+        "short": "Medkila",
+        "weightedAvgAge": 23,
+        "avgAge": 23.5
+      },
+      {
+        "teamId": "1div-kvinner__sandnes",
+        "name": "Sandnes",
+        "short": "Sandnes",
+        "weightedAvgAge": 23,
+        "avgAge": 22.7
+      },
+      {
+        "teamId": "1div-kvinner__avaldsnes",
+        "name": "Avaldsnes",
+        "short": "Avaldsnes",
+        "weightedAvgAge": 23.7,
+        "avgAge": 23.3
+      },
+      {
+        "teamId": "1div-kvinner__nardo",
+        "name": "Nardo",
+        "short": "Nardo",
+        "weightedAvgAge": 23.8,
+        "avgAge": 22.8
+      },
+      {
+        "teamId": "1div-kvinner__klepp",
+        "name": "Klepp",
+        "short": "Klepp",
+        "weightedAvgAge": 23.9,
+        "avgAge": 23.6
+      },
+      {
+        "teamId": "1div-kvinner__arna-bjornar",
+        "name": "Arna-Bjørnar",
+        "short": "Arna-Bjørnar",
+        "weightedAvgAge": 24.6,
+        "avgAge": 24.5
+      },
+      {
+        "teamId": "1div-kvinner__ovrevoll-hosle",
+        "name": "Øvrevoll Hosle",
+        "short": "Øvrevoll Hosle",
+        "weightedAvgAge": 24.6,
+        "avgAge": 23.7
+      },
+      {
+        "teamId": "1div-kvinner__asane",
+        "name": "Åsane",
+        "short": "Åsane",
+        "weightedAvgAge": 24.7,
+        "avgAge": 24.7
+      },
+      {
+        "teamId": "1div-kvinner__fart",
+        "name": "Fart",
+        "short": "Fart",
+        "weightedAvgAge": 24.8,
+        "avgAge": 24.2
+      }
+    ],
+    "goalsByRound": [
+      {
+        "round": 1,
+        "goals": 20,
+        "matches": 6,
+        "home": 4,
+        "away": 2,
+        "draw": 0
+      },
+      {
+        "round": 2,
+        "goals": 20,
+        "matches": 6,
+        "home": 4,
+        "away": 1,
+        "draw": 1
+      },
+      {
+        "round": 3,
+        "goals": 18,
+        "matches": 6,
+        "home": 3,
+        "away": 2,
+        "draw": 1
+      },
+      {
+        "round": 4,
+        "goals": 14,
+        "matches": 6,
+        "home": 1,
+        "away": 2,
+        "draw": 3
+      },
+      {
+        "round": 5,
+        "goals": 9,
+        "matches": 6,
+        "home": 2,
+        "away": 3,
+        "draw": 1
+      },
+      {
+        "round": 6,
+        "goals": 21,
+        "matches": 6,
+        "home": 6,
+        "away": 0,
+        "draw": 0
+      },
+      {
+        "round": 7,
+        "goals": 22,
+        "matches": 6,
+        "home": 1,
+        "away": 5,
+        "draw": 0
+      },
+      {
+        "round": 8,
+        "goals": 21,
+        "matches": 6,
+        "home": 2,
+        "away": 2,
+        "draw": 2
+      },
+      {
+        "round": 9,
+        "goals": 20,
+        "matches": 6,
+        "home": 5,
+        "away": 0,
+        "draw": 1
+      },
+      {
+        "round": 10,
+        "goals": 14,
+        "matches": 6,
+        "home": 1,
+        "away": 3,
+        "draw": 2
+      },
+      {
+        "round": 11,
+        "goals": 8,
+        "matches": 6,
+        "home": 2,
+        "away": 2,
+        "draw": 2
+      },
+      {
+        "round": 12,
+        "goals": 23,
+        "matches": 6,
+        "home": 2,
+        "away": 3,
+        "draw": 1
+      },
+      {
+        "round": 13,
+        "goals": 18,
+        "matches": 6,
+        "home": 2,
+        "away": 2,
+        "draw": 2
+      },
+      {
+        "round": 14,
+        "goals": 19,
+        "matches": 6,
+        "home": 1,
+        "away": 3,
+        "draw": 2
+      },
+      {
+        "round": 15,
+        "goals": 16,
+        "matches": 6,
+        "home": 5,
+        "away": 0,
+        "draw": 1
+      },
+      {
+        "round": 16,
+        "goals": 18,
+        "matches": 6,
+        "home": 5,
+        "away": 1,
+        "draw": 0
+      },
+      {
+        "round": 17,
+        "goals": 15,
+        "matches": 6,
+        "home": 3,
+        "away": 0,
+        "draw": 3
+      },
+      {
+        "round": 18,
+        "goals": 16,
+        "matches": 6,
+        "home": 2,
+        "away": 2,
+        "draw": 2
+      },
+      {
+        "round": 19,
+        "goals": 27,
+        "matches": 6,
+        "home": 0,
+        "away": 4,
+        "draw": 2
+      },
+      {
+        "round": 20,
+        "goals": 23,
+        "matches": 6,
+        "home": 2,
+        "away": 1,
+        "draw": 3
+      },
+      {
+        "round": 21,
+        "goals": 16,
+        "matches": 6,
+        "home": 3,
+        "away": 2,
+        "draw": 1
+      },
+      {
+        "round": 22,
+        "goals": 18,
+        "matches": 6,
+        "home": 2,
+        "away": 3,
+        "draw": 1
+      }
+    ]
+  }
+]

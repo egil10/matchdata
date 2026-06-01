@@ -1,0 +1,27 @@
+{
+  "generatedAt": "2026-06-01T09:52:11.265Z",
+  "season": 2024,
+  "seasonLabel": "2024",
+  "counts": {
+    "leagues": 6,
+    "teams": 82,
+    "players": 1886,
+    "matches": 1066,
+    "realMatches": 480,
+    "modeledMatches": 586
+  },
+  "realLeagueIds": [
+    "eliteserien",
+    "obos-ligaen"
+  ],
+  "modeledLeagueIds": [
+    "postnord-avd1",
+    "3div-avd1",
+    "toppserien",
+    "1div-kvinner"
+  ],
+  "attribution": {
+    "openfootball": "Results & standings (Eliteserien, OBOS-ligaen) — public domain, github.com/openfootball",
+    "thesportsdb": "Club crests & metadata — TheSportsDB.com"
+  }
+}
