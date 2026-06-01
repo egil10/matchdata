@@ -135,6 +135,35 @@ export function Segmented<T extends string>({
   );
 }
 
+/* ----------------------------------------------------- Collapsible card
+   Card with a clickable header that folds its content away — lets dense
+   dashboards be tidied down to just the sections you care about. */
+export function CollapsibleCard({
+  title, subtitle, right, defaultOpen = true, children, className,
+}: { title: React.ReactNode; subtitle?: React.ReactNode; right?: React.ReactNode; defaultOpen?: boolean; children: React.ReactNode; className?: string }) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div className={cn("card-surface overflow-hidden", className)}>
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition hover:bg-muted/30"
+      >
+        <div className="min-w-0">
+          <h3 className="truncate font-semibold">{title}</h3>
+          {subtitle && <p className="mt-0.5 truncate text-xs text-muted-foreground">{subtitle}</p>}
+        </div>
+        <span className="flex shrink-0 items-center gap-2">
+          {right}
+          <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform duration-200", !open && "-rotate-90")} />
+        </span>
+      </button>
+      {open && <div className="animate-fade-in px-4 pb-4">{children}</div>}
+    </div>
+  );
+}
+
 export function SearchInput({
   value, onChange, placeholder, className,
 }: { value: string; onChange: (v: string) => void; placeholder?: string; className?: string }) {

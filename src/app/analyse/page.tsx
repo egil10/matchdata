@@ -5,8 +5,8 @@ import { usePlayers, useTeams, useLeagues, useGender, useDebounced, type CPlayer
 import { fmt, signed } from "@/lib/format";
 import { mean, median, stdev, fiveNumber, pearson, histogram } from "@/lib/stats";
 import { POS_GROUP_COLOR } from "@/lib/metrics";
-import { PageHeader, Card, Stat, Badge } from "@/components/ui/primitives";
-import { Field, Select, SortHeader } from "@/components/ui/controls";
+import { PageHeader, Stat, Badge } from "@/components/ui/primitives";
+import { Field, Select, SortHeader, CollapsibleCard } from "@/components/ui/controls";
 import { Tabs } from "@/components/ui/tabs";
 import { BoxPlot, MiniHist, Heatmap } from "@/components/dataviz";
 import { OverlayHistogram, ScatterLab, RankBarChart, DonutChart } from "@/components/charts-lazy";
@@ -248,37 +248,34 @@ function DistTab({ pool, teamById }: { pool: CPlayer[]; teamById: Record<string,
         <Stat label="Høyest" value={f(all.length ? Math.max(...all) : 0)} />
       </section>
 
-      <Card className="p-4">
-        <h3 className="mb-1 font-semibold">Fordeling — {m.label}</h3>
-        <p className="mb-3 text-xs text-muted-foreground">Antall spillere per intervall (hele utvalget).</p>
+      <CollapsibleCard title={`Fordeling — ${m.label}`} subtitle="Antall spillere per intervall (hele utvalget).">
         <OverlayHistogram data={histData} series={[{ key: "count", name: "Spillere", color: "hsl(var(--primary))" }]} height={280} xUnit="" />
-      </Card>
+      </CollapsibleCard>
 
       {cross && (
-        <Card className="p-4">
-          <h3 className="mb-1 font-semibold">{m.label}: {gl} × {cross.def2.label.toLowerCase()}</h3>
-          <p className="mb-3 text-xs text-muted-foreground">{m.agg === "sum" ? "Sum" : "Snitt"} per celle — mørkere = høyere{crossRows.length < rows.length ? ` · viser ${crossRows.length} av ${rows.length} grupper` : ""}.</p>
+        <CollapsibleCard
+          title={`${m.label}: ${gl} × ${cross.def2.label.toLowerCase()}`}
+          subtitle={`${m.agg === "sum" ? "Sum" : "Snitt"} per celle — mørkere = høyere${crossRows.length < rows.length ? ` · viser ${crossRows.length} av ${rows.length} grupper` : ""}.`}
+        >
           <Heatmap
             rows={crossRows.map((r) => ({ key: r.key, label: r.label }))}
             cols={cross.cols}
             value={(rk, ck) => round(cross.agg(cross.mat[rk]?.[ck]))}
             format={(v) => f(v)}
           />
-        </Card>
+        </CollapsibleCard>
       )}
 
-      <Card className="p-4">
-        <div className="mb-1 flex items-center justify-between">
-          <h3 className="font-semibold">{m.label} per {gl}</h3>
-          <span className="text-xs text-muted-foreground">sortert etter median</span>
-        </div>
-        <p className="mb-4 text-xs text-muted-foreground">Boks = Q1–Q3, strek = median, linje = laveste→høyeste.</p>
+      <CollapsibleCard
+        title={`${m.label} per ${gl}`}
+        subtitle="Boks = Q1–Q3, strek = median, linje = laveste→høyeste."
+        right={<span className="hidden text-xs text-muted-foreground sm:inline">sortert etter median</span>}
+      >
         <BoxPlot rows={boxRows.rows} domainMin={boxRows.dmn} domainMax={boxRows.dmx} />
-      </Card>
+      </CollapsibleCard>
 
-      <Card className="overflow-hidden">
-        <div className="border-b border-border px-4 py-3"><h3 className="font-semibold">Statistikk — {m.label} per {gl}</h3></div>
-        <div className="overflow-x-auto">
+      <CollapsibleCard title={`Statistikk — ${m.label} per ${gl}`}>
+        <div className="-mx-1 overflow-x-auto">
           <table className="w-full min-w-[720px] text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/40 text-[11px] uppercase tracking-wide text-muted-foreground">
@@ -322,7 +319,7 @@ function DistTab({ pool, teamById }: { pool: CPlayer[]; teamById: Record<string,
             </tbody>
           </table>
         </div>
-      </Card>
+      </CollapsibleCard>
     </div>
   );
 }
@@ -381,18 +378,15 @@ function RegTab({ pool, teamById }: { pool: CPlayer[]; teamById: Record<string, 
         </div>
       </div>
 
-      <Card className="p-4">
-        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-          <p className="text-sm font-medium">{mx.label} <span className="text-muted-foreground">vs</span> {my.label}</p>
-          <p className="text-xs text-muted-foreground">
-            {n} {perPlayer ? "spillere" : "punkter"} · y = {fmt(slope, 3)}·x {intercept >= 0 ? "+" : "−"} {fmt(Math.abs(intercept), 2)}
-          </p>
-        </div>
+      <CollapsibleCard
+        title={<span className="text-sm">{mx.label} <span className="text-muted-foreground">vs</span> {my.label}</span>}
+        subtitle={`${n} ${perPlayer ? "spillere" : "punkter"} · y = ${fmt(slope, 3)}·x ${intercept >= 0 ? "+" : "−"} ${fmt(Math.abs(intercept), 2)}`}
+      >
         <ScatterLab points={points} xLabel={mx.label} yLabel={my.label} xRef={xRef} yRef={yRef} trend height={460} />
         <p className="mt-2 text-xs text-muted-foreground">
           Stiplet lilla linje = OLS-regresjon. {Math.abs(r) < 0.2 ? "Ingen tydelig lineær sammenheng." : `${r > 0 ? "Positiv" : "Negativ"} sammenheng — forklarer ${fmt(r2 * 100, 0)} % av variasjonen.`}
         </p>
-      </Card>
+      </CollapsibleCard>
     </div>
   );
 }
@@ -435,21 +429,16 @@ function GeoTab({ pool }: { pool: CPlayer[] }) {
   return (
     <div className="space-y-6">
       <div className="grid gap-6 lg:grid-cols-3">
-        <Card className="p-4 lg:col-span-2">
-          <h3 className="mb-1 font-semibold">Spillere per fylke</h3>
-          <p className="mb-3 text-xs text-muted-foreground">Geografisk opphav (modellert).</p>
+        <CollapsibleCard title="Spillere per fylke" subtitle="Geografisk opphav (modellert)." className="lg:col-span-2">
           <RankBarChart data={rankData} height={Math.max(280, rankData.length * 26)} unit=" spillere" />
-        </Card>
-        <Card className="p-4">
-          <h3 className="mb-1 font-semibold">Landslagsandel</h3>
-          <p className="mb-3 text-xs text-muted-foreground">Andel med landskamper.</p>
+        </CollapsibleCard>
+        <CollapsibleCard title="Landslagsandel" subtitle="Andel med landskamper.">
           <DonutChart segments={natShare} height={220} />
-        </Card>
+        </CollapsibleCard>
       </div>
 
-      <Card className="overflow-hidden">
-        <div className="border-b border-border px-4 py-3"><h3 className="font-semibold">Fylkesstatistikk</h3></div>
-        <div className="overflow-x-auto">
+      <CollapsibleCard title="Fylkesstatistikk">
+        <div className="-mx-1 overflow-x-auto">
           <table className="w-full min-w-[560px] text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/40 text-[11px] uppercase tracking-wide text-muted-foreground">
@@ -475,7 +464,7 @@ function GeoTab({ pool }: { pool: CPlayer[] }) {
             </tbody>
           </table>
         </div>
-      </Card>
+      </CollapsibleCard>
     </div>
   );
 }
