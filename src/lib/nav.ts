@@ -8,7 +8,7 @@ export const NAV = [
 ];
 
 export const NAV_MORE = [
-  { href: "/alder", label: "Aldersfordeling" },
+  { href: "/alder", label: "Alderslab" },
   { href: "/sammenlign", label: "Sammenlign" },
   { href: "/favoritter", label: "Favoritter" },
   { href: "/om", label: "Om & metode" },

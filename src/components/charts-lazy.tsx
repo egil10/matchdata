@@ -27,3 +27,9 @@ export const ScatterLab = dynamic(() => import("./charts").then((m) => m.Scatter
 export const RankBarChart = dynamic(() => import("./charts").then((m) => m.RankBarChart), {
   ssr: false, loading: () => <Sk h={300} />,
 });
+export const OverlayHistogram = dynamic(() => import("./charts").then((m) => m.OverlayHistogram), {
+  ssr: false, loading: () => <Sk h={280} />,
+});
+export const StackedBars = dynamic(() => import("./charts").then((m) => m.StackedBars), {
+  ssr: false, loading: () => <Sk h={360} />,
+});

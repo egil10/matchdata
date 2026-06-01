@@ -188,6 +188,68 @@ export function ScatterLab({
   );
 }
 
+/* ------------------------------------------ Overlaid distribution (2 series) */
+export function OverlayHistogram({
+  data, series, height = 280, xUnit = "år", barChart = true, stack = false,
+}: {
+  data: Record<string, number>[];
+  series: { key: string; name: string; color: string }[];
+  height?: number; xUnit?: string; barChart?: boolean; stack?: boolean;
+}) {
+  return (
+    <ResponsiveContainer width="100%" height={height}>
+      {barChart ? (
+        <BarChart data={data} margin={{ top: 8, right: 8, left: -18, bottom: 4 }} barGap={1} barCategoryGap={stack ? "8%" : "12%"}>
+          <CartesianGrid {...grid} />
+          <XAxis dataKey="age" {...axis} interval={0} />
+          <YAxis {...axis} allowDecimals={false} />
+          <Tooltip {...tooltipStyle} labelFormatter={(l) => `${l} ${xUnit}`} />
+          <Legend wrapperStyle={{ fontSize: 11 }} />
+          {series.map((s, i) => (
+            <Bar key={s.key} dataKey={s.key} name={s.name} stackId={stack ? "a" : undefined} fill={s.color} fillOpacity={stack ? 0.9 : 0.72} radius={stack ? (i === series.length - 1 ? [3, 3, 0, 0] : undefined) : [3, 3, 0, 0]} isAnimationActive={false} />
+          ))}
+        </BarChart>
+      ) : (
+        <LineChart data={data} margin={{ top: 8, right: 8, left: -18, bottom: 4 }}>
+          <CartesianGrid {...grid} />
+          <XAxis dataKey="age" {...axis} interval={0} />
+          <YAxis {...axis} allowDecimals={false} />
+          <Tooltip {...tooltipStyle} labelFormatter={(l) => `${l} ${xUnit}`} />
+          <Legend wrapperStyle={{ fontSize: 11 }} />
+          {series.map((s) => (
+            <Line key={s.key} type="monotone" dataKey={s.key} name={s.name} stroke={s.color} strokeWidth={2.2} dot={false} isAnimationActive={false} />
+          ))}
+        </LineChart>
+      )}
+    </ResponsiveContainer>
+  );
+}
+
+/* ------------------------------------------------ Stacked bars (horizontal) */
+export function StackedBars({
+  data, xKey, keys, height = 360, percent = false,
+}: {
+  data: Record<string, any>[];
+  xKey: string;
+  keys: { key: string; label: string; color: string }[];
+  height?: number; percent?: boolean;
+}) {
+  return (
+    <ResponsiveContainer width="100%" height={height}>
+      <BarChart layout="vertical" data={data} margin={{ top: 4, right: 16, left: 8, bottom: 4 }} stackOffset={percent ? "expand" : "none"}>
+        <CartesianGrid stroke="hsl(var(--border))" strokeDasharray="3 3" horizontal={false} />
+        <XAxis type="number" {...axis} tickFormatter={percent ? (v: any) => `${Math.round(v * 100)}%` : undefined} />
+        <YAxis type="category" dataKey={xKey} {...axis} width={96} interval={0} />
+        <Tooltip {...tooltipStyle} formatter={percent ? (v: any) => `${Math.round(v * 100)} %` : undefined} />
+        <Legend wrapperStyle={{ fontSize: 11 }} />
+        {keys.map((k, i) => (
+          <Bar key={k.key} dataKey={k.key} name={k.label} stackId="a" fill={k.color} isAnimationActive={false} radius={i === keys.length - 1 ? [0, 3, 3, 0] : undefined} />
+        ))}
+      </BarChart>
+    </ResponsiveContainer>
+  );
+}
+
 /* ------------------------------------------------ Horizontal bar ranking */
 export function RankBarChart({
   data, color = "hsl(var(--primary))", height = 320, unit = "",
