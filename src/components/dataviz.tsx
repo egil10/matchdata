@@ -16,8 +16,10 @@ export function BoxPlot({
   const pos = (v: number) => ((v - domainMin) / span) * 100;
   return (
     <div className="space-y-1">
-      {rows.map((r) => (
-        <div key={r.name} className="group flex items-center gap-2 text-xs">
+      {rows.map((r, i) => (
+        // index in key: row labels can legitimately repeat (e.g. same club short
+        // name across divisions), and a non-unique key corrupts reconciliation.
+        <div key={`${r.name}-${i}`} className="group flex items-center gap-2 text-xs">
           <div className="w-24 shrink-0 truncate text-right font-medium text-muted-foreground" title={r.name}>{r.name}</div>
           <div className="relative h-5 flex-1" title={`${r.name}: median ${r.median}${unit} · IQR ${r.q1}–${r.q3} · range ${r.min}–${r.max}`}>
             {/* whisker line */}
@@ -49,7 +51,10 @@ export function Heatmap({
   color?: string; // "r g b"
   emptyLow?: boolean;
 }) {
-  const max = Math.max(1, ...rows.flatMap((r) => cols.map((c) => value(r.key, c.key))));
+  const cells = rows.flatMap((r) => cols.map((c) => value(r.key, c.key)));
+  const lo = cells.length ? Math.min(...cells) : 0;
+  const hi = cells.length ? Math.max(...cells) : 1;
+  const span = hi - lo || 1;
   return (
     <div className="overflow-x-auto">
       <table className="w-full border-separate" style={{ borderSpacing: 3 }}>
@@ -67,7 +72,7 @@ export function Heatmap({
               <td className="sticky left-0 z-10 whitespace-nowrap bg-card pr-2 text-right text-xs font-medium text-muted-foreground">{r.label}</td>
               {cols.map((c) => {
                 const v = value(r.key, c.key);
-                const t = max ? v / max : 0;
+                const t = Math.max(0, Math.min(1, (v - lo) / span));
                 const a = emptyLow ? 0.08 + t * 0.85 : t;
                 return (
                   <td key={c.key} className="h-9 min-w-[44px] rounded-md text-center text-xs font-semibold tabular-nums" style={{ background: `rgba(${color} / ${a})`, color: t > 0.5 ? "white" : "hsl(var(--foreground))" }} title={`${r.label} · ${c.label}: ${format ? format(v) : v}`}>

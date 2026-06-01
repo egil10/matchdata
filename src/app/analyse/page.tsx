@@ -6,9 +6,9 @@ import { fmt, signed } from "@/lib/format";
 import { mean, median, stdev, fiveNumber, pearson, histogram } from "@/lib/stats";
 import { POS_GROUP_COLOR } from "@/lib/metrics";
 import { PageHeader, Card, Stat, Badge } from "@/components/ui/primitives";
-import { Field, Select, Segmented, SortHeader } from "@/components/ui/controls";
+import { Field, Select, SortHeader } from "@/components/ui/controls";
 import { Tabs } from "@/components/ui/tabs";
-import { BoxPlot, MiniHist } from "@/components/dataviz";
+import { BoxPlot, MiniHist, Heatmap } from "@/components/dataviz";
 import { OverlayHistogram, ScatterLab, RankBarChart, DonutChart } from "@/components/charts-lazy";
 
 type Agg = "sum" | "mean";
@@ -101,8 +101,8 @@ export default function AnalysePage() {
       ) : (
         <Tabs
           items={[
-            { id: "fordeling", label: "Fordelinger", content: <DistTab pool={pool} teamGroups={teamGroups} /> },
-            { id: "regresjon", label: "Regresjon", content: <RegTab pool={pool} teamGroups={teamGroups} /> },
+            { id: "fordeling", label: "Fordelinger", content: <DistTab pool={pool} teamById={teamById} /> },
+            { id: "regresjon", label: "Regresjon", content: <RegTab pool={pool} teamById={teamById} /> },
             { id: "geografi", label: "Geografi", content: <GeoTab pool={pool} /> },
           ]}
         />
@@ -112,32 +112,77 @@ export default function AnalysePage() {
 }
 
 /* =============================================================== Distribution */
-type TeamRow = { id: string; name: string; color: string; n: number; mean: number; median: number; sd: number; min: number; max: number; total: number; hist: number[]; q1: number; q3: number };
+type GRow = { key: string; label: string; color: string; href?: string; n: number; mean: number; median: number; sd: number; min: number; max: number; total: number; hist: number[]; q1: number; q3: number };
 type DSort = "name" | "n" | "mean" | "median" | "sd" | "min" | "max" | "total";
 
-function DistTab({ pool, teamGroups }: { pool: CPlayer[]; teamGroups: { id: string; name: string; color: string; players: CPlayer[] }[] }) {
+const PALETTE = ["#0ea5e9", "#22c55e", "#f59e0b", "#ef4444", "#a855f7", "#14b8a6", "#ec4899", "#f43f5e", "#84cc16", "#06b6d4", "#8b5cf6", "#eab308"];
+const AGE_BAND_COLOR: Record<string, string> = { u21: "#22c55e", b2125: "#0ea5e9", b2629: "#f59e0b", o30: "#ef4444" };
+const ageBandKey = (a: number) => (a <= 20 ? "u21" : a <= 25 ? "b2125" : a <= 29 ? "b2629" : "o30");
+const ageBandLabel = (a: number) => (a <= 20 ? "U21" : a <= 25 ? "21–25" : a <= 29 ? "26–29" : "30+");
+
+interface GroupDef {
+  label: string; keyOf: (p: CPlayer) => string; nameOf: (p: CPlayer) => string;
+  href?: (key: string) => string; colorOf?: (key: string, i: number, teamById: Record<string, any>) => string; numeric?: boolean;
+}
+const GROUP_DEFS: Record<string, GroupDef> = {
+  team: { label: "Lag", keyOf: (p) => p.ti, nameOf: (p) => p.ts, href: (k) => `/lag/${k}`, colorOf: (k, i, t) => t[k]?.color || PALETTE[i % PALETTE.length] },
+  pos: { label: "Posisjon", keyOf: (p) => p.pg, nameOf: (p) => p.pg, colorOf: (k) => POS_GROUP_COLOR[k] || "#64748b" },
+  league: { label: "Liga", keyOf: (p) => p.lg, nameOf: (p) => p.ln },
+  fylke: { label: "Fylke", keyOf: (p) => p.fy, nameOf: (p) => p.fy },
+  ageband: { label: "Aldersgruppe", keyOf: (p) => ageBandKey(p.age), nameOf: (p) => ageBandLabel(p.age), colorOf: (k) => AGE_BAND_COLOR[k] || "#64748b" },
+  by: { label: "Fødselsår", keyOf: (p) => String(p.by), nameOf: (p) => String(p.by), numeric: true },
+  nat: { label: "Landslag", keyOf: (p) => (p.nat === 1 ? "1" : "0"), nameOf: (p) => (p.nat === 1 ? "Landslagsspiller" : "Øvrige") },
+};
+const GROUP_OPTS = Object.entries(GROUP_DEFS).map(([k, d]) => ({ value: k, label: d.label })).sort((a, b) => a.label.localeCompare(b.label, "nb"));
+
+interface GroupEntry { key: string; label: string; color: string; href?: string; players: CPlayer[] }
+function buildGroups(pool: CPlayer[], def: GroupDef, teamById: Record<string, any>): GroupEntry[] {
+  const by: Record<string, { key: string; name: string; players: CPlayer[] }> = {};
+  for (const p of pool) {
+    const k = def.keyOf(p);
+    (by[k] ||= { key: k, name: def.nameOf(p), players: [] }).players.push(p);
+  }
+  const entries = Object.values(by);
+  const nameCount: Record<string, number> = {};
+  for (const e of entries) nameCount[e.name] = (nameCount[e.name] || 0) + 1;
+  return entries.map((e, i) => ({
+    key: e.key,
+    players: e.players,
+    // disambiguate identical short names across divisions (e.g. two "Sarpsborg")
+    label: nameCount[e.name] > 1 ? `${e.name} · ${e.players[0].ln}` : e.name,
+    color: def.colorOf ? def.colorOf(e.key, i, teamById) : PALETTE[i % PALETTE.length],
+    href: def.href ? def.href(e.key) : undefined,
+  }));
+}
+
+function DistTab({ pool, teamById }: { pool: CPlayer[]; teamById: Record<string, any> }) {
   const [metricKey, setMetricKey] = useState("min");
+  const [groupKey, setGroupKey] = useState("team");
+  const [group2Key, setGroup2Key] = useState("none");
   const [sort, setSort] = useState<DSort>("mean");
   const [dir, setDir] = useState<"asc" | "desc">("desc");
   const m = METRICS[metricKey];
+  const gdef = GROUP_DEFS[groupKey];
 
   const all = useMemo(() => values(pool, m), [pool, m]);
   const hist = useMemo(() => histogram(all, 18), [all]);
   const histData = useMemo(() => hist.map((b) => ({ age: b.label, count: b.count })), [hist]);
 
-  const rows = useMemo<TeamRow[]>(() => teamGroups.map((g) => {
+  const groups = useMemo(() => buildGroups(pool, gdef, teamById), [pool, gdef, teamById]);
+
+  const rows = useMemo<GRow[]>(() => groups.map((g) => {
     const v = values(g.players, m);
     const fn = fiveNumber(v);
     return {
-      id: g.id, name: g.name, color: g.color, n: v.length,
+      key: g.key, label: g.label, color: g.color, href: g.href, n: v.length,
       mean: mean(v), median: median(v), sd: stdev(v), min: fn.min, max: fn.max,
       total: v.reduce((s, x) => s + x, 0), q1: fn.q1, q3: fn.q3,
       hist: histogram(v, 12).map((b) => b.count),
     };
-  }), [teamGroups, m]);
+  }).filter((r) => r.n > 0), [groups, m]);
 
   const sorted = useMemo(() => {
-    const get = (r: TeamRow): number | string => (sort === "name" ? r.name : (r as any)[sort]);
+    const get = (r: GRow): number | string => (sort === "name" ? r.label : (r as any)[sort]);
     const arr = [...rows].sort((a, b) => {
       const ga = get(a), gb = get(b);
       return typeof ga === "string" ? (ga as string).localeCompare(gb as string, "nb") : (ga as number) - (gb as number);
@@ -148,24 +193,49 @@ function DistTab({ pool, teamGroups }: { pool: CPlayer[]; teamGroups: { id: stri
   const onSort = (k: DSort) => { if (sort === k) setDir((d) => (d === "asc" ? "desc" : "asc")); else { setSort(k); setDir(k === "name" ? "asc" : "desc"); } };
 
   const boxRows = useMemo(() => {
-    const withN = rows.filter((r) => r.n > 0);
-    const dmn = withN.length ? Math.min(...withN.map((r) => r.min)) : 0;
-    const dmx = withN.length ? Math.max(...withN.map((r) => r.max)) : 1;
+    const dmn = rows.length ? Math.min(...rows.map((r) => r.min)) : 0;
+    const dmx = rows.length ? Math.max(...rows.map((r) => r.max)) : 1;
     return {
       dmn, dmx,
       rows: [...rows].sort((a, b) => a.median - b.median).map((r) => ({
-        name: r.name, min: round(r.min), q1: round(r.q1), median: round(r.median), q3: round(r.q3), max: round(r.max), color: r.color,
+        name: r.label, min: round(r.min), q1: round(r.q1), median: round(r.median), q3: round(r.q3), max: round(r.max), color: r.color,
       })),
     };
   }, [rows]);
 
+  // Optional cross-tabulation: aggregate the metric over group1 × group2.
+  const cross = useMemo(() => {
+    if (group2Key === "none") return null;
+    const def2 = GROUP_DEFS[group2Key];
+    const cols = buildGroups(pool, def2, teamById)
+      .sort((a, b) => (def2.numeric ? Number(a.key) - Number(b.key) : a.label.localeCompare(b.label, "nb")));
+    const mat: Record<string, Record<string, number[]>> = {};
+    for (const p of pool) {
+      if (m.qualified && p.q !== 1) continue;
+      const v = m.get(p); if (v == null || !isFinite(v)) continue;
+      const k1 = gdef.keyOf(p), k2 = def2.keyOf(p);
+      ((mat[k1] ||= {})[k2] ||= []).push(v);
+    }
+    const agg = (arr?: number[]) => (!arr || !arr.length ? 0 : m.agg === "sum" ? arr.reduce((s, x) => s + x, 0) : arr.reduce((s, x) => s + x, 0) / arr.length);
+    return { def2, cols: cols.map((c) => ({ key: c.key, label: c.label })), agg, mat };
+  }, [group2Key, pool, gdef, m, teamById]);
+
+  const crossRows = useMemo(() => [...rows].sort((a, b) => b.n - a.n).slice(0, 40), [rows]);
+
   const f = (n: number) => fmt(n, m.d);
+  const gl = gdef.label.toLowerCase();
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <Field label="Metrikk" className="w-full sm:w-72">
+      <div className="grid gap-3 rounded-xl border border-border bg-card p-4 sm:grid-cols-2 lg:grid-cols-3">
+        <Field label="Metrikk">
           <Select value={metricKey} onChange={setMetricKey} options={METRIC_OPTS} searchable />
+        </Field>
+        <Field label="Grupper etter">
+          <Select value={groupKey} onChange={(v) => { setGroupKey(v); if (v === group2Key) setGroup2Key("none"); }} options={GROUP_OPTS} />
+        </Field>
+        <Field label="Kryss med (valgfritt)">
+          <Select value={group2Key} onChange={setGroup2Key} options={[{ value: "none", label: "Ingen" }, ...GROUP_OPTS.filter((o) => o.value !== groupKey)]} />
         </Field>
       </div>
 
@@ -180,13 +250,26 @@ function DistTab({ pool, teamGroups }: { pool: CPlayer[]; teamGroups: { id: stri
 
       <Card className="p-4">
         <h3 className="mb-1 font-semibold">Fordeling — {m.label}</h3>
-        <p className="mb-3 text-xs text-muted-foreground">Antall spillere per intervall.</p>
+        <p className="mb-3 text-xs text-muted-foreground">Antall spillere per intervall (hele utvalget).</p>
         <OverlayHistogram data={histData} series={[{ key: "count", name: "Spillere", color: "hsl(var(--primary))" }]} height={280} xUnit="" />
       </Card>
 
+      {cross && (
+        <Card className="p-4">
+          <h3 className="mb-1 font-semibold">{m.label}: {gl} × {cross.def2.label.toLowerCase()}</h3>
+          <p className="mb-3 text-xs text-muted-foreground">{m.agg === "sum" ? "Sum" : "Snitt"} per celle — mørkere = høyere{crossRows.length < rows.length ? ` · viser ${crossRows.length} av ${rows.length} grupper` : ""}.</p>
+          <Heatmap
+            rows={crossRows.map((r) => ({ key: r.key, label: r.label }))}
+            cols={cross.cols}
+            value={(rk, ck) => round(cross.agg(cross.mat[rk]?.[ck]))}
+            format={(v) => f(v)}
+          />
+        </Card>
+      )}
+
       <Card className="p-4">
         <div className="mb-1 flex items-center justify-between">
-          <h3 className="font-semibold">{m.label} per lag</h3>
+          <h3 className="font-semibold">{m.label} per {gl}</h3>
           <span className="text-xs text-muted-foreground">sortert etter median</span>
         </div>
         <p className="mb-4 text-xs text-muted-foreground">Boks = Q1–Q3, strek = median, linje = laveste→høyeste.</p>
@@ -194,12 +277,12 @@ function DistTab({ pool, teamGroups }: { pool: CPlayer[]; teamGroups: { id: stri
       </Card>
 
       <Card className="overflow-hidden">
-        <div className="border-b border-border px-4 py-3"><h3 className="font-semibold">Lagstatistikk — {m.label}</h3></div>
+        <div className="border-b border-border px-4 py-3"><h3 className="font-semibold">Statistikk — {m.label} per {gl}</h3></div>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[720px] text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/40 text-[11px] uppercase tracking-wide text-muted-foreground">
-                <SortHeader label="Lag" active={sort === "name"} dir={dir} onClick={() => onSort("name")} align="left" />
+                <SortHeader label={gdef.label} active={sort === "name"} dir={dir} onClick={() => onSort("name")} align="left" />
                 <SortHeader label="N" active={sort === "n"} dir={dir} onClick={() => onSort("n")} />
                 <SortHeader label="Snitt" active={sort === "mean"} dir={dir} onClick={() => onSort("mean")} />
                 <SortHeader label="Median" active={sort === "median"} dir={dir} onClick={() => onSort("median")} />
@@ -212,12 +295,19 @@ function DistTab({ pool, teamGroups }: { pool: CPlayer[]; teamGroups: { id: stri
             </thead>
             <tbody>
               {sorted.map((r) => (
-                <tr key={r.id} className="border-b border-border/50 transition last:border-0 hover:bg-muted/40">
+                <tr key={r.key} className="border-b border-border/50 transition last:border-0 hover:bg-muted/40">
                   <td className="px-2 py-2">
-                    <Link href={`/lag/${r.id}`} className="flex items-center gap-2 font-medium hover:text-primary">
-                      <span className="h-2.5 w-2.5 shrink-0 rounded-[3px]" style={{ background: r.color }} />
-                      <span className="truncate">{r.name}</span>
-                    </Link>
+                    {r.href ? (
+                      <Link href={r.href} className="flex items-center gap-2 font-medium hover:text-primary">
+                        <span className="h-2.5 w-2.5 shrink-0 rounded-[3px]" style={{ background: r.color }} />
+                        <span className="truncate">{r.label}</span>
+                      </Link>
+                    ) : (
+                      <span className="flex items-center gap-2 font-medium">
+                        <span className="h-2.5 w-2.5 shrink-0 rounded-[3px]" style={{ background: r.color }} />
+                        <span className="truncate">{r.label}</span>
+                      </span>
+                    )}
                   </td>
                   <td className="px-1.5 py-2 text-center tabular-nums text-muted-foreground">{r.n}</td>
                   <td className="px-1.5 py-2 text-center font-semibold tabular-nums">{f(r.mean)}</td>
@@ -238,25 +328,29 @@ function DistTab({ pool, teamGroups }: { pool: CPlayer[]; teamGroups: { id: stri
 }
 
 /* ================================================================ Regression */
-function RegTab({ pool, teamGroups }: { pool: CPlayer[]; teamGroups: { id: string; name: string; color: string; players: CPlayer[] }[] }) {
-  const [level, setLevel] = useState<"team" | "player">("team");
+const REG_MODE_OPTS = [{ value: "player", label: "Per spiller" }, ...GROUP_OPTS.map((o) => ({ value: o.value, label: `Per ${o.label.toLowerCase()}` }))];
+
+function RegTab({ pool, teamById }: { pool: CPlayer[]; teamById: Record<string, any> }) {
+  const [mode, setMode] = useState("team");
   const [xk, setXk] = useState("age");
   const [yk, setYk] = useState("tiv");
   const mx = METRICS[xk], my = METRICS[yk];
+  const perPlayer = mode === "player";
 
   const points = useMemo(() => {
-    if (level === "team") {
-      return teamGroups.map((g) => ({
-        id: g.id, name: g.name, sub: `${g.players.length} spillere`, color: g.color,
-        x: round(aggregate(g.players, mx)), y: round(aggregate(g.players, my)), r: g.players.length,
-      }));
+    if (perPlayer) {
+      const src = (mx.qualified || my.qualified) ? pool.filter((p) => p.q === 1) : pool;
+      return src.map((p) => ({
+        id: p.id, name: p.n, sub: `${p.ts} · ${p.pg}`, color: POS_GROUP_COLOR[p.pg] || "#64748b",
+        x: round(mx.get(p)), y: round(my.get(p)), r: Math.max(40, p.min / 6),
+      })).filter((p) => isFinite(p.x) && isFinite(p.y));
     }
-    const src = (mx.qualified || my.qualified) ? pool.filter((p) => p.q === 1) : pool;
-    return src.map((p) => ({
-      id: p.id, name: p.n, sub: `${p.ts} · ${p.pg}`, color: POS_GROUP_COLOR[p.pg] || "#64748b",
-      x: round(mx.get(p)), y: round(my.get(p)), r: Math.max(40, p.min / 6),
+    const def = GROUP_DEFS[mode];
+    return buildGroups(pool, def, teamById).map((g) => ({
+      id: g.key, name: g.label, sub: `${g.players.length} spillere`, color: g.color,
+      x: round(aggregate(g.players, mx)), y: round(aggregate(g.players, my)), r: g.players.length,
     })).filter((p) => isFinite(p.x) && isFinite(p.y));
-  }, [level, teamGroups, pool, mx, my]);
+  }, [mode, perPlayer, pool, teamById, mx, my]);
 
   const xs = points.map((p) => p.x), ys = points.map((p) => p.y);
   const r = pearson(xs, ys);
@@ -276,8 +370,8 @@ function RegTab({ pool, teamGroups }: { pool: CPlayer[]; teamGroups: { id: strin
   return (
     <div className="space-y-5">
       <div className="grid gap-3 rounded-xl border border-border bg-card p-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Field label="Nivå">
-          <Segmented value={level} onChange={setLevel} options={[{ value: "team", label: "Per lag" }, { value: "player", label: "Per spiller" }]} />
+        <Field label="Nivå / gruppe">
+          <Select value={mode} onChange={setMode} options={REG_MODE_OPTS} />
         </Field>
         <Field label="X-akse"><Select value={xk} onChange={setXk} options={METRIC_OPTS} searchable /></Field>
         <Field label="Y-akse"><Select value={yk} onChange={setYk} options={METRIC_OPTS} searchable /></Field>
@@ -291,7 +385,7 @@ function RegTab({ pool, teamGroups }: { pool: CPlayer[]; teamGroups: { id: strin
         <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
           <p className="text-sm font-medium">{mx.label} <span className="text-muted-foreground">vs</span> {my.label}</p>
           <p className="text-xs text-muted-foreground">
-            {n} {level === "team" ? "lag" : "spillere"} · y = {fmt(slope, 3)}·x {intercept >= 0 ? "+" : "−"} {fmt(Math.abs(intercept), 2)}
+            {n} {perPlayer ? "spillere" : "punkter"} · y = {fmt(slope, 3)}·x {intercept >= 0 ? "+" : "−"} {fmt(Math.abs(intercept), 2)}
           </p>
         </div>
         <ScatterLab points={points} xLabel={mx.label} yLabel={my.label} xRef={xRef} yRef={yRef} trend height={460} />
