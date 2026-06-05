@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { RotateCcw } from "lucide-react";
+import { RotateCcw, Star } from "lucide-react";
 import { usePlayers, useLeagues, useGender, useDebounced, type CPlayer } from "@/lib/client";
 import { cn } from "@/lib/cn";
 import { fmt, signed } from "@/lib/format";
@@ -43,7 +43,13 @@ export default function SpillerePage() {
     [leagues, gender],
   );
   const fylker = useMemo(() => [...new Set(pool.map((p) => p.fy))].sort((a, b) => a.localeCompare(b, "nb")), [pool]);
-  const years = useMemo(() => [...new Set(pool.map((p) => p.by))].sort((a, b) => b - a), [pool]);
+  // Birth-year → age, taken straight from the data so the label tracks the
+  // current season instead of a hardcoded base year.
+  const years = useMemo(() => {
+    const byAge = new Map<number, number>();
+    for (const p of pool) if (!byAge.has(p.by)) byAge.set(p.by, p.age);
+    return [...byAge.entries()].sort((a, b) => b[0] - a[0]);
+  }, [pool]);
 
   const filtered = useMemo(() => {
     const ql = dq.trim().toLowerCase();
@@ -71,7 +77,7 @@ export default function SpillerePage() {
     setQ(""); setLeague("all"); setFylke("all"); setBy("all"); setPos("all"); setNatOnly(false); setMinMin(0);
   }
 
-  const shown = filtered.slice(0, 400);
+  const shown = useMemo(() => filtered.slice(0, 400), [filtered]);
 
   return (
     <div>
@@ -96,7 +102,7 @@ export default function SpillerePage() {
             <Select value={fylke} onChange={setFylke} options={[{ value: "all", label: "Alle fylker" }, ...fylker.map((f) => ({ value: f, label: f }))]} />
           </Field>
           <Field label="Fødselsår">
-            <Select value={by} onChange={setBy} options={[{ value: "all", label: "Alle år" }, ...years.map((y) => ({ value: String(y), label: `${y} (${db_age(y)})` }))]} />
+            <Select value={by} onChange={setBy} options={[{ value: "all", label: "Alle år" }, ...years.map(([y, age]) => ({ value: String(y), label: `${y} (${age} år)` }))]} />
           </Field>
           <Field label={`Min. spilletid: ${minMin} min`}>
             <input type="range" min={0} max={2000} step={90} value={minMin} onChange={(e) => setMinMin(+e.target.value)} className="h-9 w-full accent-[hsl(var(--primary))]" />
@@ -139,7 +145,7 @@ export default function SpillerePage() {
                     <Link href={`/spiller/${p.id}`} className="flex items-center gap-2 font-medium hover:text-primary">
                       <Avatar name={p.n} posGroup={p.pg} size="sm" />
                       <span className="truncate">{p.n}</span>
-                      {p.nat === 1 && <span className="text-[10px] text-amber-500" title="Landslagsspiller">★</span>}
+                      {p.nat === 1 && <Star className="h-3 w-3 shrink-0 fill-amber-500 text-amber-500" aria-label="Landslagsspiller" />}
                     </Link>
                   </td>
                   <td className="px-2 py-2"><Link href={`/lag/${p.ti}`} className="text-muted-foreground hover:text-foreground">{p.ts}</Link></td>
@@ -157,8 +163,4 @@ export default function SpillerePage() {
       </div>
     </div>
   );
-}
-
-function db_age(year: number) {
-  return `${2024 - year} år`;
 }

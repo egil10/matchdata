@@ -74,21 +74,30 @@ html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
 
 body {
   color: hsl(var(--foreground));
-  background:
-    radial-gradient(1100px 560px at 82% -8%, #ffeedd 0%, transparent 60%),
-    radial-gradient(880px 520px at 6% 100%, #e6ecff 0%, transparent 55%),
-    hsl(var(--background));
-  background-attachment: fixed;
+  background: hsl(var(--background));
   font-feature-settings: "cv02", "cv03", "cv11", "ss01";
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-.dark body {
+/* Signature warm/cool glow lives on a fixed, GPU-isolated layer rather than
+   `background-attachment: fixed` — the latter forces a full-page repaint on
+   every scroll frame (very janky on mobile). A fixed pseudo-element is painted
+   once and composited, so scrolling stays smooth. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(1100px 560px at 82% -8%, #ffeedd 0%, transparent 60%),
+    radial-gradient(880px 520px at 6% 100%, #e6ecff 0%, transparent 55%);
+}
+.dark body::before {
   background:
     radial-gradient(1100px 560px at 82% -8%, rgba(56, 84, 150, 0.20) 0%, transparent 60%),
-    radial-gradient(880px 520px at 6% 100%, rgba(96, 64, 150, 0.18) 0%, transparent 55%),
-    hsl(var(--background));
+    radial-gradient(880px 520px at 6% 100%, rgba(96, 64, 150, 0.18) 0%, transparent 55%);
 }
 
 @layer base {

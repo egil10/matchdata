@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { Search, Check, ChevronDown } from "lucide-react";
+import { Search, Check, ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 export function Field({ label, children, className }: { label?: React.ReactNode; children: React.ReactNode; className?: string }) {
@@ -223,7 +223,9 @@ export function SortHeader({
     <th className={cn("px-1.5 py-2.5 font-semibold", align === "left" ? "text-left" : align === "right" ? "text-right" : "text-center", className)}>
       <button onClick={onClick} className={cn("inline-flex items-center gap-1 transition hover:text-foreground", active ? "text-foreground" : "")}>
         {label}
-        <span className={cn("text-[9px]", active ? "opacity-100" : "opacity-30")}>{active ? (dir === "asc" ? "▲" : "▼") : "▼"}</span>
+        {active && dir === "asc"
+          ? <ChevronUp className="h-3 w-3" />
+          : <ChevronDown className={cn("h-3 w-3", active ? "opacity-100" : "opacity-30")} />}
       </button>
     </th>
   );

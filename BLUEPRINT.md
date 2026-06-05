@@ -1,17 +1,18 @@
-# Quiz Site Blueprint
+# Matchdata Blueprint
 
-A deep, portable spec for building a quiz website with the same look, feel,
-architecture, and polish as **artguessr** (a "guess the painter" art quiz).
-Drop this file into a fresh repo and hand it to a coding agent: it captures the
-design system, UX rules, data architecture, performance playbook, every pitfall
-we hit (with the fix), the deployment + custom-domain process, and the owner's
-working preferences — so building the next quiz site is mostly assembly.
+A deep, portable spec for **Matchdata** — an advanced-statistics site for Norwegian
+football (Eliteserien, OBOS-ligaen, Toppserien and the lower divisions, down to
+the grassroots). Drop this file into a fresh repo and hand it to a coding agent:
+it captures the design system, the two-tier data architecture, the build-time
+generation pipeline, the performance playbook, the data-honesty rules, every
+pitfall worth avoiding, and the owner's working preferences — so rebuilding (or
+re-skinning to another league/sport) is mostly assembly.
 
 > **How to use this doc.** Keep the **design system** (§3) and **architecture**
-> (§5–§9) verbatim. Swap only the **data model** + **game modes** (§5) for your
-> topic. The personality lives in §3–§4; the speed lives in §7; the
-> don't-repeat-our-mistakes lives in §10. Read §11 (preferences) before making
-> any judgment call.
+> (§4–§7) close to verbatim. Swap the **data model + pipeline** (§5) for your
+> sport/league. The personality lives in §3; the speed lives in §6–§7; the
+> data-honesty contract lives in §8; the don't-repeat-our-mistakes lives in §10.
+> Read §12 (preferences) before any judgment call.
 
 ---
 
@@ -20,712 +21,544 @@ working preferences — so building the next quiz site is mostly assembly.
 1. What this is
 2. Tech stack & file map
 3. Design system (copy verbatim)
-4. UX patterns that make it feel good
-5. Data model & pipeline
-6. Progressive loading & caching
-7. Image performance playbook
-8. The Elo rating system
-9. State management & persistence patterns
-10. Header / layout system
-11. Pitfalls & hard-won lessons (read this!)
-12. Deployment & custom domains (Squarespace → Vercel)
-13. Owner's working style & preferences
-14. Re-skinning checklist for a new topic
-15. Quick-reference cheatsheet
+4. Architecture: two data tiers
+5. Data model & generation pipeline
+6. Performance playbook
+7. Caching & versioning
+8. Data honesty (the core promise)
+9. Gender & theme systems
+10. Pitfalls & hard-won lessons
+11. Deployment
+12. Owner's working style & preferences
+13. Re-skinning checklist
+14. Quick-reference cheatsheet
 
 ---
 
 ## 1. What this is
 
-An **endless multiple-choice quiz**. One question at a time: a prompt (here, a
-painting image) plus four answer pills. Pick one → instant reveal
-(correct/not quite) with context → next. No score screen, no "game over" — you
-keep going. A searchable **gallery** browses the full dataset, and a per-device
-**Elo rating** tracks skill over time.
+A **statically-generated football analytics site**. Real results and league
+tables (public-domain openfootball data) are combined with a clearly-labelled
+**modeled** player layer (squads, minutes, on-pitch +/−, an Elo-flavoured "Team
+Impact" metric, age profiles). It's a browse-and-analyse experience, not a live
+scoreboard: deep league/team/player/match pages plus interactive "labs"
+(scatter explorer, age lab, cross-tabs, team comparison).
 
 The feelings to preserve, in priority order:
 
-1. **Instant.** You never wait. Data is seeded + cached; images blur-up from a
-   tiny placeholder and the next few preload. Advancing is immediate.
-2. **Calm & gallery-like.** Frosted translucent glass floating over a warm-paper
-   gradient. No hard chrome, no solid toolbars, generous radii.
-3. **Keyboard-first.** `1`–`4` to answer, `Enter`/`Space`/`→` for next.
-4. **No layout jump.** The reveal panel is fixed-height; answering never shifts
-   the page.
-5. **Clean header.** Controls never squish or reflow when state changes (this
-   took several iterations — see §10).
+1. **Instant.** Almost everything is prerendered to static HTML at build time.
+   Heavy interactive datasets stream from immutable-cached JSON and are held in a
+   module-level cache so route changes never refetch.
+2. **Calm, editorial, data-dense.** Frosted translucent glass floating over a
+   warm-paper gradient; generous radii; restrained colour; `tabular-nums`
+   everywhere numbers live so tables don't jitter.
+3. **Honest.** Real data and modeled data are *always* visually distinguished
+   (see §8). We never dress up an estimate as an official number.
+4. **Bilingual-by-toggle (men/women) and dark/light** without a flash or a
+   layout jump.
+5. **Keyboard-first search.** `⌘K` / `Ctrl-K` opens a command palette over the
+   whole dataset.
+
+The UI language is **Norwegian (bokmål)**; locale-aware sorting (`localeCompare(…, "nb")`)
+and number/date formatting (`Intl.*` with `nb-NO`) are used throughout.
 
 ---
 
 ## 2. Tech stack & file map
 
-- **Next.js 16 (App Router)** + **React 19**. Every component is `"use client"` —
-  it's a statically-served client app, not an SSR/data-fetching app.
-- **TypeScript**, strict.
-- **Tailwind CSS** + a small custom token/component layer (§3).
-- **lucide-react** for icons. **No emojis in the UI, ever** (see §11).
-- **next/font/google** for one display face (the wordmark only).
-- **No backend, no database.** Data is static JSON in `public/`. Per-user state
-  (Elo, prefs, reports) lives in `localStorage`.
+- **Next.js 14 (App Router)** + **React 18**, **TypeScript** (strict-ish; build
+  ignores type/lint errors so a red squiggle never blocks a deploy — validate
+  manually, see §14).
+- **Tailwind CSS 3** + a small token/component layer in `globals.css` (§3).
+- **lucide-react** for all icons. **No emojis in the UI, ever.** No raw unicode
+  glyphs as iconography either (no `★`/`▲`) — use a lucide component so weight,
+  size and colour are controllable.
+- **recharts** for rich charts, **lazy-loaded** so it's never in the first load
+  (§6). A second, dependency-free `dataviz.tsx` covers inline SVG/CSS viz.
+- **next/font/google**: `Inter` (body) + `Syne` (display/wordmark only).
+- **No backend, no database.** All data is static JSON generated at build time.
+  Per-device state (favourites, theme, gender) lives in cookies / `localStorage`.
 - **Deploys to Vercel**, fully static. Pushing `main` auto-deploys.
 
 ```
+scripts/
+  generate.mjs            # THE pipeline: real + modeled → all JSON datasets (runs on predev & build)
+  fetch-2026.mjs          # pull live 2026 fixtures/tables (TheSportsDB) into cache/
+  fetch-real.mjs          # pull openfootball results/history into cache/
+  fetch-logos.mjs         # pull club crests (Wikidata/TheSportsDB) into cache/
+  shots.mjs               # Playwright screenshots of every route (.shots/)
+  lib/{metrics,prng,sources}.mjs   # shared maths, seeded RNG, club/source tables
+  cache/                  # committed raw-source cache (openfootball, thesportsdb, wikidata, wikipedia)
 src/
   app/
-    layout.tsx        # root html/body, metadata, viewport, display font wiring
-    globals.css       # design tokens + component classes (the design system)
-    icon.svg          # favicon (App Router auto-serves app/icon.svg)
-    page.tsx          # quiz route — owns category/mode state, renders <Quiz>
-    gallery/page.tsx  # searchable grid + scrollable filter strip + detail modal
+    layout.tsx            # root html/body, fonts, metadata, the no-FOUC theme script, Header/Footer/Palette
+    globals.css           # design tokens + component classes (the design system)
+    page.tsx              # home (server component)
+    {ligaer,spillere,kamper,analyse,utforsk,landslag,alder,overganger,sammenlign,favoritter,om}/page.tsx
+    liga/[id]/  lag/[id]/  spiller/[id]/  kamp/[id]/page.tsx   # SSG detail pages (generateStaticParams)
+    loading.tsx  not-found.tsx  icon.svg
   components/
-    Quiz.tsx          # the game: reducer state machine, reveal panels, streaks, Elo wiring
-    EloBadge.tsx      # rating badge (dynamic icon) + history line chart panel
-    Wordmark.tsx      # the "artguessr" brand mark (hard-reload link)
-    CategoryPicker.tsx / ModePicker.tsx   # full-screen frosted choosers
-    ReportsModal.tsx  # queue of user-flagged items
+    layout/{header,footer,command-palette,gender-toggle,theme-toggle}.tsx
+    ui/{primitives,controls,tabs}.tsx     # Card/Badge/Stat/PageHeader · Select/Segmented/SortHeader/Collapsible · Tabs
+    charts.tsx            # all recharts components ("use client")
+    charts-lazy.tsx       # next/dynamic wrappers (ssr:false) → recharts loads only on mount
+    dataviz.tsx           # dependency-free SVG/CSS viz (BoxPlot, Heatmap, MiniHist, DivergeBar, SegBar)
+    widgets.tsx  tables.tsx  transfers-list.tsx  fav-button.tsx  brand/logo.tsx
+  data/generated/*.json   # FULL datasets — imported by server components only (multi-MB)
   lib/
-    paintings.ts      # types, category/mode defs, choice builder, seeded RNG, image helpers
-    usePaintings.ts   # progressive fetch + in-memory cache of the dataset
-    elo.ts            # pure Elo maths + localStorage persistence + status classifier
-    reports.ts        # localStorage-backed "report this item" queue
-  scripts/
-    fetch-paintings.mjs   # Wikidata SPARQL → public/paintings.json
-    derive-popular.mjs    # full set → public/paintings-popular.json (the seed)
-public/
-  paintings.json          # full dataset (~2.75 MB), sorted by fame (most notable first)
-  paintings-popular.json  # ~300 popular paintings (~83 KB) for instant first paint
-next.config.mjs           # immutable cache headers for the data files; image remotePatterns
-CLAUDE.md                 # agent working agreements (always push, validation, etc.)
+    db.ts                 # SERVER data layer: static-imports generated JSON, exposes typed accessors
+    client.ts             # CLIENT data layer: useJson() hooks fetch trimmed public/data JSON
+    types.ts              # the canonical domain types (League/Team/Player/Fixture/MatchDetail/…)
+    metrics.ts colors.ts format.ts stats.ts matches.ts gender.ts nav.ts cn.ts use-favorites.ts
+public/data/*.json        # TRIMMED client datasets (players/teams/leagues/fixtures/search/meta)
+next.config.mjs           # immutable cache headers for /data/*, DATA_VERSION env, package-import optim
 ```
 
 ---
 
 ## 3. Design system (copy verbatim)
 
-The entire visual identity is ~170 lines of CSS + a handful of Tailwind tokens.
-Reproduce both and you have the look.
+The whole visual identity is ~180 lines of CSS + a Tailwind token map. Reproduce
+both and you have the look.
 
-### 3.1 Tailwind tokens (`tailwind.config.ts`)
+### 3.1 Identity in one sentence
 
-```ts
-theme: {
-  extend: {
-    fontFamily: {
-      sans: ["ui-sans-serif","-apple-system","BlinkMacSystemFont","Inter","SF Pro Text","Segoe UI","sans-serif"],
-      display: ["var(--font-display)", "ui-sans-serif", "sans-serif"], // the wordmark face
-    },
-    colors: {
-      ink:    { DEFAULT: "#0a0a0a", soft: "#1c1c1e", muted: "#6b7280" },
-      canvas: { DEFAULT: "#fafaf7", warm: "#f3efe7" },
-    },
-    backdropBlur: { xs: "2px" },
-    animation: {
-      "fade-in": "fadeIn 220ms ease-out both",
-      "fade-up": "fadeUp 260ms cubic-bezier(.2,.7,.2,1) both",
-      "pop":     "pop 260ms cubic-bezier(.2,.9,.3,1.2) both",
-    },
-    keyframes: {
-      fadeIn: { "0%": { opacity: "0" }, "100%": { opacity: "1" } },
-      fadeUp: { "0%": { opacity:"0", transform:"translateY(6px)" }, "100%": { opacity:"1", transform:"translateY(0)" } },
-      pop:    { "0%": { transform:"scale(.98)", opacity:"0" }, "100%": { transform:"scale(1)", opacity:"1" } },
-    },
-  },
-}
-```
+**Warm-paper glass + pills.** Translucent frosted surfaces (`glass`,
+`glass-strong`, `card-surface`) floating over a near-white paper background lit
+by one warm and one cool radial glow; pill-shaped controls; restrained colour;
+generous radii (`--radius: 1.1rem`); icons from lucide only.
 
-### 3.2 The display font (wordmark)
+### 3.2 Colour — HSL design tokens
 
-Loaded via `next/font/google` in `layout.tsx`, exposed as a CSS variable, and
-used **only** for the brand wordmark — body stays on the system sans stack.
-
-```tsx
-import { Syne } from "next/font/google";
-const display = Syne({ subsets: ["latin"], variable: "--font-display", display: "swap" });
-// <body className={`min-h-dvh antialiased font-sans ${display.variable}`}>
-```
-
-Syne is a deliberately artsy/geometric/modern face — fits a gallery brand. The
-owner's taste is **"artsy, minimal, modern"** display type; Syne, Fraunces,
-Instrument Serif, Space Grotesk are all on-brand candidates.
-
-### 3.3 Tokens + component classes (`globals.css`)
+All colour is **HSL channel triplets in CSS variables**, consumed as
+`hsl(var(--x))` (and `hsl(var(--x) / .5)` for alpha). Tailwind's theme maps
+semantic names (`background`, `foreground`, `card`, `muted`, `primary`,
+`accent`, `border`, …) onto these, so every utility (`bg-card`, `text-muted-foreground`)
+is theme-aware. Light is the **default identity** (warm paper); `.dark` on
+`<html>` swaps the whole palette to a deep cool slate.
 
 ```css
-@tailwind base; @tailwind components; @tailwind utilities;
-
 :root {
-  --canvas: #fafaf7;        --canvas-warm: #f3efe7;
-  --ink: #0a0a0a;           --ink-soft: #1c1c1e;   --ink-muted: #6b7280;
-  --hairline: rgba(10,10,10,0.08);
-  --glass-bg: rgba(255,255,255,0.55);
-  --glass-bg-strong: rgba(255,255,255,0.78);
-  --glass-stroke: rgba(255,255,255,0.7);
-  --accent: #0a0a0a;        --good: #16a34a;       --bad: #dc2626;
+  --radius: 1.1rem;
+  /* Light — warm paper (default identity) */
+  --background: 44 32% 97%;   --foreground: 0 0% 7%;
+  --card: 0 0% 100%;          --card-foreground: 0 0% 7%;
+  --popover: 42 40% 99%;      --popover-foreground: 0 0% 7%;
+  --muted: 40 18% 93%;        --muted-foreground: 220 9% 42%;
+  --border: 36 18% 87%;       --input: 36 18% 84%;
+  --primary: 211 90% 44%;     --primary-foreground: 0 0% 100%;   /* football blue */
+  --accent: 262 72% 56%;      --accent-foreground: 0 0% 100%;    /* violet */
+  --ring: 211 90% 44%;
+  --success: 152 56% 36%;     --danger: 352 72% 47%;   --warning: 30 92% 44%;
+  --chart-1..6: …;            /* 6-colour categorical chart ramp */
+  --glass-bg: rgba(255,255,255,.6);   --glass-strong: rgba(255,255,255,.8);
+  --glass-stroke: rgba(255,255,255,.75);
+  --glass-shadow: 0 1px 2px rgba(20,20,30,.04), 0 14px 36px -16px rgba(20,20,40,.22);
 }
-
-/* The signature backdrop: warm + cool radial glows over near-white paper. */
-html, body {
-  background:
-    radial-gradient(1200px 600px at 80% -10%, #ffeed8 0%, transparent 60%),
-    radial-gradient(900px 500px at 10% 100%, #e7eaff 0%, transparent 55%),
-    var(--canvas);
-  background-attachment: fixed;
-  color: var(--ink);
-  -webkit-font-smoothing: antialiased;
-  font-feature-settings: "ss01", "cv11";
-}
-* { -webkit-tap-highlight-color: transparent; }
-button { font: inherit; }
-
-@layer components {
-  /* Translucent floating surfaces. `glass` for pills/cards, `glass-strong` for
-     the main content card, `frost` for modals (near-opaque so text reads). */
-  .glass {
-    background: var(--glass-bg);
-    backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px);
-    border: 1px solid var(--glass-stroke);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.7), 0 1px 2px rgba(10,10,10,.04), 0 12px 32px -12px rgba(10,10,10,.18);
-  }
-  .glass-strong {
-    background: var(--glass-bg-strong);
-    backdrop-filter: saturate(180%) blur(24px); -webkit-backdrop-filter: saturate(180%) blur(24px);
-    border: 1px solid var(--glass-stroke);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.8), 0 1px 2px rgba(10,10,10,.05), 0 16px 40px -16px rgba(10,10,10,.2);
-  }
-  .frost {
-    background: rgba(252,251,247,.94);
-    backdrop-filter: saturate(180%) blur(32px); -webkit-backdrop-filter: saturate(180%) blur(32px);
-    border: 1px solid rgba(255,255,255,.85);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 1px 2px rgba(10,10,10,.04), 0 28px 80px -24px rgba(10,10,10,.35);
-  }
-  .frost-backdrop {
-    background: rgba(20,20,25,.32);
-    backdrop-filter: saturate(150%) blur(18px); -webkit-backdrop-filter: saturate(150%) blur(18px);
-  }
-  /* Pills are the universal control. One base, three fills. */
-  .pill       { @apply inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium select-none transition; }
-  .pill-ghost { @apply pill text-ink/80 hover:text-ink hover:bg-black/[0.04]; }
-  .pill-solid { @apply pill bg-black text-white hover:bg-black/85; }
-  .pill-glass { @apply pill glass text-ink/90 hover:text-ink; }
-  .focus-ring { @apply outline-none focus-visible:ring-2 focus-visible:ring-black/30 focus-visible:ring-offset-2 focus-visible:ring-offset-canvas; }
-}
-
-/* Thin floating-capsule scrollbars (replaces chunky Windows default). */
-*::-webkit-scrollbar { width: 12px; height: 12px; }
-*::-webkit-scrollbar-track { background: transparent; }
-*::-webkit-scrollbar-thumb { background: rgba(10,10,10,.16); border: 3px solid transparent; border-radius: 999px; background-clip: padding-box; }
-*::-webkit-scrollbar-thumb:hover { background-color: rgba(10,10,10,.32); background-clip: padding-box; }
-* { scrollbar-width: thin; scrollbar-color: rgba(10,10,10,.18) transparent; }
-/* Hide scrollbar entirely on horizontal control/filter strips. */
-.no-scrollbar::-webkit-scrollbar { display: none; }
-.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-/* Celebration (streak milestones) */
-@keyframes confettiFall { 0% { transform: translateY(-12vh) rotate(0); opacity:0 } 8% { opacity:1 } 100% { transform: translateY(108vh) rotate(720deg); opacity:0 } }
-@keyframes diplomaPop { 0% { transform: scale(.82) translateY(12px); opacity:0 } 55% { transform: scale(1.04) translateY(0); opacity:1 } 100% { transform: scale(1) translateY(0); opacity:1 } }
-.animate-diploma { animation: diplomaPop 440ms cubic-bezier(.2,.8,.3,1.1) both; }
-@media (prefers-reduced-motion: reduce) { .animate-diploma { animation: none; } }
-```
-
-### 3.4 Visual rules of thumb
-
-- **Surfaces float; nothing is a solid bar.** Toolbars are a row of individual
-  frosted pills over scrolling content (`sticky top-0 z-30`, no background band).
-  Cards use `glass-strong` + large soft shadows + `rounded-[28px]`.
-- **Radii are generous:** pills `rounded-full`; cards `rounded-[28px]`/`rounded-3xl`;
-  inner chips `rounded-2xl`.
-- **Color is restrained.** Almost everything is `ink` on `canvas`.
-  `text-ink-muted` (#6b7280) for secondary text. Green (`--good`) / red (`--bad`)
-  **only** for correct/incorrect. One amber accent for streaks/achievements.
-- **Type:** system sans; tight headings (`font-bold leading-tight`); tiny uppercase
-  labels (`text-[11px] font-semibold uppercase tracking-wider text-ink-muted`).
-- **Numbers use `tabular-nums`** so scores/ratings don't jitter.
-- **Motion is brief & soft:** `animate-pop` (entering cards), `animate-fade-up`
-  (reveals), `animate-fade-in` (modal backdrops). Always honour
-  `prefers-reduced-motion`.
-- **Icons:** lucide, `size={13–16}`, `strokeWidth={2}` (≈2.2 when emphasised).
-  **Never emojis.**
-- **The wordmark** is a two-tone lowercase mark — `art` in `ink`, `guessr` in
-  `ink-muted` — in the display font. It's a plain `<a href="/">` (full reload =
-  hard reset). On wide screens it floats into the left gutter (`fixed`, `hidden
-  xl:block`); below that it sits inline.
-
----
-
-## 4. UX patterns that make it feel good
-
-1. **Fixed-height reveal, no jump.** Desktop has a fixed-width side panel
-   (`md:w-[300px]`) that swaps between an *idle* state (round #, mode, best
-   streak) and a *reveal* state (correct/not + answer + context). The prompt
-   card never resizes. Mobile shows the reveal as an overlay pinned to the
-   bottom of the image.
-2. **Keyboard-first.** A global `keydown`: digits `1`–`4` answer while idle;
-   `Enter`/`Space`/`→` advance after answering. Ignore keys when focus is in an
-   `INPUT`/`TEXTAREA`.
-3. **Optional auto-advance.** A pill cycles Manual → 1s → 3s → 5s, persisted to
-   `localStorage`. A timer fires "next" after the reveal.
-4. **Image preloading + blur-up.** See §7 — this is the single biggest
-   feel-good lever.
-5. **Streaks + celebration.** Track current/best streak; a dot tracker fills
-   toward a goal (10); crossing a multiple fires a confetti "diploma" modal.
-6. **Review mode.** Wrong answers go into a capped queue; when "Review" is on,
-   a probability each round re-surfaces a missed item.
-7. **Report flow.** Every item has a flag button that copies a markdown line to
-   the clipboard and queues it in `localStorage` — a zero-backend way to collect
-   data-quality feedback ("paste it back in chat").
-8. **Per-device Elo (§8).** Top-right badge; the rating *change* shows inside
-   the green/red answer feedback, not in the badge.
-9. **HD / data-saver toggle (§7).** A flag-styled icon button, auto-defaulting
-   to saver on slow connections.
-
----
-
-## 5. Data model & pipeline
-
-The dataset is a flat JSON array in `public/`, **sorted by notability** (most
-famous first). That ordering is itself a signal — used both for the "Popular"
-tag (top 300) and for Elo difficulty (§8). Each item is small and
-self-describing:
-
-```ts
-type Painting = {
-  id: string;            // stable source id (Wikidata Q-number)
-  title: string;
-  artist: string;        // the primary "answer" field
-  year: string | null;
-  image: string;         // Commons filename, resolved to a URL at render time
-  cats: string[];        // category tags this item belongs to
-  mv: string | null;     // extra facets usable as alternate answer modes
-  loc: string | null;
-  g: string | null;
-};
-```
-
-The raw sitelink/fame count is **dropped** from the shipped file to save bytes —
-the array index *is* the fame rank. Keep it that way; recover rank with a
-`Map<id, index>` at runtime if you need it (we do, for Elo).
-
-**Categories** are a typed list (`key`, `label`, `hint`, `group`), grouped for
-the picker UI ("starts" / "movement" / "subject" / "origin"). Filtering is just
-`items.filter(i => i.cats.includes(key))`.
-
-**Game modes** turn different fields into the answer. Each mode is
-`(item) => answerString | null`; items lacking that field are filtered out of
-the pool for that mode. (painter / title / movement / country / decade.)
-
-**Choice builder:** take the correct answer, pull 3 distinct distractors of the
-same type from the pool, shuffle. Use a **seeded RNG** (mulberry32-style) so
-generation is deterministic per seed — important for the weighted picker and
-reproducibility.
-
-**Smart question picker** (what stops it feeling repetitive): sample K
-candidates and weight them by
-- strong penalty if the *item* was shown recently,
-- decaying penalty if the *answer* (artist) appeared recently,
-- a `1/sqrt(frequency)` boost so under-represented answers surface more —
-then pick proportionally. Keep recency windows for items and answers, scaled to
-pool size. Top up a small look-ahead **queue** (~3 rounds) so images can preload.
-
-**Pipeline (`scripts/`):**
-- `fetch-paintings.mjs` queries Wikidata SPARQL, tiered by sitelink count, keeps
-  ≤~25 per artist (so one painter can't dominate), sorts by fame, tags
-  categories, marks the top 300 `popular`, writes `public/paintings.json`.
-- `derive-popular.mjs` filters that to the `popular` items → `paintings-popular.json`
-  (the instant-load seed). It's chained into `npm run fetch:paintings`.
-
-For a new topic, replace `fetch-*.mjs` with whatever yields your `Item[]` sorted
-by your notability metric, keep `derive-popular.mjs` (or adapt the seed filter),
-and **bump `DATA_VERSION`** so caches refresh.
-
----
-
-## 6. Progressive loading & caching
-
-**The problem we hit:** the full dataset is 2.75 MB (~608 KB gzipped). Fetching
-it on every load with `cache: "no-cache"` blocked the first paint *and* forced a
-network round-trip even when cached.
-
-**The fix (two parts):**
-
-1. **Seed + stream.** The default quiz only needs the ~300 "popular" paintings.
-   Ship them as `paintings-popular.json` (~18 KB gzipped). The hook loads the
-   seed first (quiz playable almost instantly), then loads the full set in
-   parallel and swaps it in seamlessly — the running game doesn't reset because
-   the reducer keys off ids, not array identity.
-
-2. **Immutable caching + version busting.** Files in `public/` default to
-   `Cache-Control: public, max-age=0, must-revalidate` on Vercel — i.e. a
-   revalidation round-trip every visit. Override it:
-
-   ```js
-   // next.config.mjs
-   async headers() {
-     const immutable = [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }];
-     return [
-       { source: "/paintings.json", headers: immutable },
-       { source: "/paintings-popular.json", headers: immutable },
-     ];
-   }
-   ```
-
-   and fetch with `cache: "force-cache"` against a **versioned URL**
-   (`/paintings.json?v=3`). The bytes at a given URL never change → safe to cache
-   forever; bumping `DATA_VERSION` makes a new URL that misses the cache. Repeat
-   visits then skip the network entirely.
-
-`usePaintings` shape (module-level cache so route changes don't refetch;
-SSR-safe; seed is best-effort, full is authoritative):
-
-```ts
-let full = null, seed = null, inflightFull = null, inflightSeed = null;
-// loadFull(): force-cache /paintings.json?v=…   → normalize → cache in `full`
-// loadSeed(): force-cache /paintings-popular.json?v=…
-export function usePaintings() {
-  const [paintings, setPaintings] = useState(full);
-  // on mount: if full cached → use it; else setPaintings(seed) then setPaintings(full)
+.dark {
+  --background: 224 30% 8%;   --foreground: 210 22% 96%;   --card: 224 26% 11%;
+  --muted: 222 18% 17%;       --muted-foreground: 216 14% 64%;   --border: 220 16% 20%;
+  --primary: 205 95% 58%;     --accent: 263 90% 72%;
+  --glass-bg: rgba(30,34,44,.55);   --glass-strong: rgba(28,32,42,.72);
+  --glass-stroke: rgba(255,255,255,.07);
+  --glass-shadow: 0 1px 2px rgba(0,0,0,.3), 0 18px 44px -18px rgba(0,0,0,.6);
+  /* …full set mirrors :root… */
 }
 ```
 
----
+Colour discipline: almost everything is `foreground` on `background`/`card`;
+`text-muted-foreground` for secondary text; `primary` (blue) for links/active,
+`accent` (violet) sparingly; semantic green/amber/rose **only** for
+tone (`good`/`low`/`bad`, real-vs-modeled, win/draw/loss). Tones are centralised
+in `lib/metrics.ts` (`TONE_TEXT`, `TONE_BG`) so a metric's colour is one lookup.
 
-## 7. Image performance playbook
+### 3.3 Fonts
 
-Images are the heaviest, most-repeated asset. The goal: **never look at a blank
-frame or spinner.** Four techniques, all in play:
+Loaded via `next/font/google` in `layout.tsx`, exposed as CSS variables:
 
-1. **Responsive `srcset`/`sizes`.** Don't ship one oversized image to everyone.
-   ```ts
-   export const IMAGE_WIDTHS = [480, 768, 1024, 1280] as const;
-   export function imageSrcSet(file, widths = IMAGE_WIDTHS) {
-     return widths.map(w => `${imageUrl(file, w)} ${w}w`).join(", ");
-   }
-   export const QUIZ_IMAGE_SIZES = "(min-width: 768px) min(640px, 60vw), 100vw";
-   ```
-   Phones grab a small file, retina desktops a larger one.
-
-2. **Look-ahead preloading that matches the displayed candidate.** Preload the
-   next ~3 queued images with `new Image()` — **and set the same `srcset`/`sizes`
-   on the preload object**, or the browser preloads a width the `<img>` never
-   requests and the work is wasted (this was a real bug — we preloaded `1024`
-   while the `<img>` rendered `1280`). Also warm the tiny blur-up placeholders.
-
-3. **Blur-up placeholder.** Render a tiny (`width=64`, ~1–3 KB) version of the
-   current image, blurred, behind the full one; the full image fades in over it
-   on load. So a category switch (a cold fetch you can't preload, because the
-   pick is fresh) shows the painting *blurry instantly* instead of blank. Keep
-   the placeholder `object-contain` like the real image so letterbox bars stay
-   warm paper, not filled with blur.
-
-4. **`fetchPriority="high"`** on the hero (it's the LCP element). In React 19 the
-   prop is camelCase `fetchPriority`.
-
-**HD / data-saver toggle.** A single small fixed width (`640`, no `srcset`,
-ignoring device pixel ratio) for "saver"; full responsive `srcset` for "high".
-Centralise in one helper used by both the `<img>` and the preloader:
-
-```ts
-export function heroImageProps(file, quality) {
-  if (quality === "saver") return { src: imageUrl(file, 640) };
-  return { src: imageUrl(file, 1024), srcSet: imageSrcSet(file), sizes: QUIZ_IMAGE_SIZES };
-}
-```
-
-**Auto-default to saver** from the (non-standard) Network Information API when
-the user hasn't chosen: `navigator.connection?.saveData === true` or
-`effectiveType ∈ {slow-2g, 2g, 3g}`. Persist the user's explicit choice.
-
-**The blur-up "ready" gotcha (important).** See §11 — deriving the ready state
-correctly is subtle because of cached images.
-
----
-
-## 8. The Elo rating system
-
-Each question is a "match": the player (starts **800**) vs the painting's
-**difficulty**, derived from its fame rank (obscure = stronger opponent, worth
-more). Standard logistic Elo:
-
-```
-expected = 1 / (1 + 10^((opponent - rating) / 400))
-rating   = clamp(rating + K * ((won ? 1 : 0) - expected), 100, ∞)
-opponentRating(rank, total) = lerp(700, 2000, rank / (total - 1))   // obscure → 2000
-K(games) = games < 30 ? 40 : games < 100 ? 24 : 16                  // provisional → settled
-```
-
-State (`localStorage`, versioned key, behind `loadElo`/`saveElo` so a future
-accounts/leaderboard phase is a clean swap):
-
-```ts
-type EloState = { rating; peak; low; games; wins; history: number[]; updatedAt };
-```
-
-- Track **both `peak` and `low`** (we added `low` late — needed for the badge
-  icon). On load, reconcile `peak`/`low` against `history`+`rating` so an older
-  blob can't claim a high/low the data contradicts.
-- **`history`** is capped (last ~250 ratings) to bound storage; it powers the
-  chart.
-
-**Dynamic badge icon** (`eloStatus`), all lucide, no emoji:
-`Trophy` (all-time high) · `Anchor` (all-time low) · `TrendingUp`/`TrendingDown`
-(short-term trend over the last ~4 answers) · `Minus` (steady). High/low take
-priority and require ≥5 games so it doesn't crown you instantly.
-
-**The rating change (`+12` / `−8`) renders inside the green/red answer
-feedback**, not in the badge — tie the number to the correctness cue. It shows
-for the whole reveal and clears when you advance.
-
-**History chart** (inline SVG, no chart lib): a line with a **rating y-axis** at
-"nice" round gridline steps (`1/2/2.5/5 ×10ⁿ`, ~4 lines) and a **question-number
-x-axis** with ticks only at round numbers (every 10, or every 100 for long
-histories). Color the line green/red by net direction.
-
----
-
-## 9. State management & persistence patterns
-
-**Game state = `useReducer`, kept pure.** No `localStorage`/IO/timers in the
-reducer — do side effects in `useEffect`. Sketch:
-
-```ts
-type Phase = "idle" | "answered";
-type State = {
-  current: Round | null;     // { item, choices[], target }
-  queue: Round[];            // look-ahead for preloading
-  recent: Set<string>;       // item recency window
-  recentArtists: string[];   // answer recency window
-  wrong: string[];           // review queue (capped)
-  picked: string | null; phase: Phase;
-  score; streak; best; total; seed;
-};
-type Action =
-  | { type: "answer"; choice }
-  | { type: "next";  pool; mode; artistFreq; review }
-  | { type: "reset"; pool; mode; artistFreq; seed };
-```
-
-Score Elo in an **effect** keyed on the answered transition, guarded by a ref so
-each round scores exactly once (`scoredRef = ${painting.id}:${total}`).
-
-**localStorage pattern (reuse for every device-local feature):**
-
-```ts
-const KEY = "app.feature.v1";          // ALWAYS versioned
-export function load(): T {
-  if (typeof window === "undefined") return def();   // SSR-safe
-  try { return { ...def(), ...JSON.parse(localStorage.getItem(KEY) || "null") }; }
-  catch { return def(); }               // also: catch quota errors on save
-}
-```
-
-**SSR hydration:** initialise `useState` with the default (so server and client
-first render match), then `useEffect(() => setState(load()), [])` after mount.
-Avoids hydration mismatch. Used for autoMode, review, Elo, and image quality.
-
-**Derive transient UI state from identity, not booleans reset in effects.** See
-§11 (the blur bug) — `const imgReady = loadedId === current.id` beats a
-`setImgReady(false)` reset that runs a frame late.
-
----
-
-## 10. Header / layout system
-
-This took the most iteration. Rules that finally made it clean:
-
-- **The header mirrors the cards below it.** The content row is
-  `painting card (flex-1)` + `gap-3` + `side panel (md:w-[300px])`. The header is
-  the same: left control group `flex-1`, right stat group `md:w-[300px]
-  md:justify-between`, `gap-3`. So the two rows' division lines up.
-- **`shrink-0` on every control/stat pill.** Flexbox's default is to shrink
-  items when space is tight — that's what squished "Auto 3s" when a long category
-  label changed width. `shrink-0` (+ `whitespace-nowrap` where needed) forbids
-  deformation.
-- **Fixed-width variable pills + font-step-down.** Category/Mode carry
-  variable-length labels. Give them a fixed desktop width (`md:w-40`, `md:w-32`)
-  and shrink the label one font step as it grows, truncating only as a last
-  resort:
-  ```ts
-  function fitLabel(label) { const n = label.length; return n > 13 ? "text-[11px]" : n > 10 ? "text-[12px]" : "text-sm"; }
-  ```
-  Result: toggling category/mode never reflows the header.
-- **Mobile: scroll, don't squish.** The left control group is
-  `flex-1 min-w-0 overflow-x-auto no-scrollbar` so on phones the controls scroll
-  horizontally at full size instead of truncating to nothing. (Add `-my-1 py-1`
-  so the focus ring isn't clipped by the overflow box.)
-- **Gutter-floated wordmark.** On `xl+` the wordmark is `fixed` in the left
-  gutter (real estate that's otherwise empty); below `xl` it's inline. This
-  declutters the toolbar on the widest screens.
-- **Compact icon buttons for secondary actions.** Report flag and the HD/Lite
-  toggle are 32px circular icon buttons (`grid h-8 w-8 place-items-center
-  rounded-full border`), dark `bg-ink` when "active". Text pills for these
-  overflow the row — keep them icon-only.
-- **Watch the fixed-width budget.** A 300px right group fits ~4 small items.
-  Adding a 5th means dropping one (we removed the standalone "Acc" pill — it's in
-  the Elo panel) rather than letting the group overflow its aligned width.
-
----
-
-## 11. Pitfalls & hard-won lessons (read this!)
-
-Each of these cost real debugging time. Don't relearn them.
-
-**Drag-to-scroll eats clicks (`setPointerCapture`).** A horizontally
-draggable strip that called `el.setPointerCapture(e.pointerId)` on *pointerdown*
-made the browser dispatch the subsequent `click` to the *capturing container*,
-not the child button — so plain clicks on the pills silently did nothing.
-**Fix:** don't capture on press. Capture **lazily**, only once movement crosses a
-threshold (~4px), and use a `moved` flag to suppress the click that ends a real
-drag. Mouse-only; let touch keep native scrolling.
-
-**Blur-up placeholder showed sharp-then-blur and got stuck.** Two causes:
-(1) `imgReady` was reset to `false` in a *post-paint* effect, so for a cached
-image the sharp version flashed before the reset; (2) a cached/preloaded image
-can already be `complete` before React attaches `onLoad`, so `imgReady` never
-flipped back and the blur sat on top forever. **Fix:** derive readiness from
-*which* id has loaded (`const imgReady = loadedId === current.id`) instead of a
-reset boolean, and add a `ref` that checks `el.complete` on mount to catch cached
-images:
 ```tsx
-<img key={id} ref={el => { if (el?.complete) setLoadedId(id); }} onLoad={() => setLoadedId(id)} … />
+import { Inter, Syne } from "next/font/google";
+const inter   = Inter({ subsets:["latin"], variable:"--font-sans",    display:"swap" });
+const display = Syne ({ subsets:["latin"], variable:"--font-display", display:"swap", weight:["700","800"] });
+// <html className={cn(inter.variable, display.variable)}>  <body className="font-sans antialiased">
 ```
 
-**Wasted image preload (width mismatch).** The look-ahead preloaded `width=1024`
-while the `<img>` rendered `width=1280` — different URLs, so every preload was
-thrown away. **Fix:** preload and display through one `heroImageProps` helper so
-the `src`/`srcSet`/`sizes` always match.
+- **Inter** is the body/UI face (the whole app). `font-feature-settings` enables
+  a few stylistic sets (`cv02 cv03 cv11 ss01`) for a slightly more characterful
+  Inter.
+- **Syne** (geometric, artsy, modern) is the **display face — wordmark only**.
+  On-brand alternates if reskinning: Space Grotesk, Fraunces, Instrument Serif.
+- Headings use `tracking-tight` (set in `@layer base`); tiny labels are
+  `text-[11px] font-semibold uppercase tracking-wide text-muted-foreground`.
+- Numbers use **`tabular-nums`** (`.stat-num` helper) so tables/stats don't jitter.
 
-**lucide `Image` shadows the global `Image` constructor.** Importing
-`{ Image }` from `lucide-react` breaks `new Image()` (used for preloading) in
-that module. **Fix:** alias it — `import { Image as ImageIcon } from "lucide-react"`.
+### 3.4 The glass + pill component layer (verbatim)
 
-**`public/` files aren't cached by default on Vercel.** They ship
-`max-age=0, must-revalidate`. Big static JSON revalidates every visit. **Fix:**
-explicit `immutable` headers in `next.config.mjs` + a `?v=` versioned URL (§6).
+```css
+@layer components {
+  .container-page { @apply container mx-auto px-4 sm:px-6; }
 
-**`next lint` was removed in Next 16.** The `lint` script errors ("Invalid
-project directory"). Validate with `npx tsc --noEmit` + `npm run build` instead.
-Don't waste time debugging the lint script.
+  /* Frosted floating surfaces. `glass` = pills/bars, `glass-strong`/`card-surface` = cards. */
+  .glass        { background: var(--glass-bg);     backdrop-filter: saturate(180%) blur(16px); border: 1px solid var(--glass-stroke); box-shadow: var(--glass-shadow); }
+  .glass-strong { background: var(--glass-strong); backdrop-filter: saturate(180%) blur(20px); border: 1px solid var(--glass-stroke); box-shadow: var(--glass-shadow); }
+  .card-surface { @apply rounded-2xl text-card-foreground; background: var(--glass-strong); backdrop-filter: saturate(180%) blur(20px); border: 1px solid var(--glass-stroke); box-shadow: var(--glass-shadow); }
+  /* (each `backdrop-filter` is paired with a `-webkit-` prefix in the real file) */
 
-**Flexbox squish on state change.** Covered in §10 — variable-width pills shrink
-their neighbours. `shrink-0` everywhere + fixed widths for variable labels.
+  .stat-num    { font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+  .text-gradient { @apply bg-clip-text text-transparent; background-image: linear-gradient(100deg, hsl(var(--primary)), hsl(var(--accent))); }
+  .glass-bar   { background: hsl(var(--background) / 0.6); backdrop-filter: saturate(180%) blur(14px); }
+  .focus-ring  { @apply outline-none focus-visible:ring-2 focus-visible:ring-ring; }
+  .link-underline { @apply underline-offset-4 hover:underline; }
+  .no-scrollbar::-webkit-scrollbar { display: none; } .no-scrollbar { scrollbar-width: none; }
+}
 
-**Adding to a fixed-width group overflows it.** A `md:w-[300px]
-md:justify-between` group with `shrink-0` items will visibly overflow if the
-items sum past 300px (they can't shrink). Budget the items; drop or relocate
-one rather than breaking the aligned width.
+/* Decorative backdrops used on hero sections. */
+.bg-grid { background-image: linear-gradient(to right, hsl(var(--border)/.6) 1px, transparent 1px), linear-gradient(to bottom, hsl(var(--border)/.6) 1px, transparent 1px); background-size: 38px 38px; mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 38%, transparent 100%); }
+.bg-glow { background: radial-gradient(50% 50% at 20% 0%, hsl(var(--primary)/.14), transparent 70%), radial-gradient(45% 45% at 85% 10%, hsl(var(--accent)/.14), transparent 70%); }
 
-**Windows line-endings.** Git warns `LF will be replaced by CRLF` on commit.
-Harmless; ignore. (Optionally add a `.gitattributes` with `* text=auto eol=lf`.)
+/* Thin floating-capsule scrollbars + tinted selection. */
+::-webkit-scrollbar { width: 11px; height: 11px; }
+::-webkit-scrollbar-thumb { background: hsl(var(--muted-foreground)/.3); border-radius: 9999px; border: 3px solid transparent; background-clip: padding-box; }
+* { scrollbar-width: thin; scrollbar-color: hsl(var(--muted-foreground)/.3) transparent; }
+::selection { background: hsl(var(--primary)/.22); }
+```
 
-**Show, don't assume, on "it's broken."** The owner reported the site "still
-under construction" — but it was live; their machine had stale DNS. Verify the
-public truth (`nslookup … 8.8.8.8`, `curl -sI https://domain`) before changing
-anything, then point them at `ipconfig /flushdns` / incognito / mobile data.
+### 3.5 The signature backdrop (perf-critical — read this)
+
+The warm/cool glow is rendered on a **fixed, GPU-isolated pseudo-element**, NOT
+with `background-attachment: fixed`. The latter forces a full-page repaint on
+every scroll frame (visibly janky on mobile); a fixed `body::before` is painted
+once and composited.
+
+```css
+body { color: hsl(var(--foreground)); background: hsl(var(--background)); -webkit-font-smoothing: antialiased; }
+body::before {
+  content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(1100px 560px at 82% -8%, #ffeedd 0%, transparent 60%),
+    radial-gradient(880px 520px at 6% 100%, #e6ecff 0%, transparent 55%);
+}
+.dark body::before {
+  background:
+    radial-gradient(1100px 560px at 82% -8%, rgba(56,84,150,.20) 0%, transparent 60%),
+    radial-gradient(880px 520px at 6% 100%, rgba(96,64,150,.18) 0%, transparent 55%);
+}
+```
+
+### 3.6 Reusable controls (`components/ui/`)
+
+A small kit every page composes from — keep these, they *are* the interaction
+language:
+
+- **`Select`** — a styled listbox popover (not native `<select>`); auto-enables a
+  search box when `options.length > 9`; closes on outside-click / Escape.
+- **`Segmented`** — pill group for small ordered sets (units, modes, status).
+- **`SortHeader`** — table `<th>` with a lucide chevron (up when asc-active, down
+  otherwise, dimmed when inactive). Used by every sortable table.
+- **`CollapsibleCard`** — `card-surface` whose header folds content away; lets
+  dense dashboards (Analyse) be tidied to just the sections you want.
+- **`SearchInput`, `Toggle`, `RangeField`, `Field`** — the rest of the form kit.
+- **`primitives.tsx`** — `Card`, `Badge`/`DataBadge`, `Crest` (club badge or
+  gradient-initial fallback), `Avatar`, `Stat`, `Meter`, `PageHeader`, `Tip`,
+  `FormGuide` (W/D/L pips).
+
+Visual rules of thumb: surfaces float (no solid bars — the header is a single
+floating glass pill, `sticky top-0`); radii are generous (`rounded-full` pills,
+`rounded-2xl` cards); motion is brief and soft (`animate-fade-in`,
+`animate-scale-in`, both honouring `prefers-reduced-motion`).
 
 ---
 
-## 12. Deployment & custom domains (Squarespace → Vercel)
+## 4. Architecture: two data tiers
 
-**Hosting.** Connect the GitHub repo to a Vercel project once; thereafter
-**pushing `main` auto-deploys**. Manual: `npx vercel --prod`. CLI domain ops:
-`npx vercel link --yes --project <name>`, then `npx vercel domains add <domain>`
-(single-arg form once the project is linked), `npx vercel domains inspect <domain>`.
+The single most important structural idea. There are **two parallel data access
+layers**, and which one you use is dictated by whether the component is a Server
+or Client Component.
 
-**Custom domain bought at Squarespace, pointed at Vercel:**
+| | `lib/db.ts` (server) | `lib/client.ts` (client) |
+|---|---|---|
+| Used by | Server Components (`page.tsx` without `"use client"`) | `"use client"` components / interactive pages |
+| Source | `import … from "@/data/generated/*.json"` (bundled at build) | `fetch("/data/*.json")` from `public/` |
+| Dataset | **full** (every field; multi-MB) | **trimmed** (short keys, only render-needed fields) |
+| Cost | zero client bytes — runs at build/SSG time | one network fetch, then cached forever (§7) |
+| Examples | home, `liga/[id]`, `lag/[id]`, `spiller/[id]`, `kamp/[id]` | `spillere`, `analyse`, `utforsk`, `sammenlign`, command palette |
 
-1. In Vercel, add both apex and `www` to the project.
-2. In Squarespace **DNS → DNS Settings**, *remove the parking records* or they
-   fight Vercel: the default `A @` records (`198.x`), the `www` CNAME →
-   `ext-sq.squarespace.com`, **and the `HTTPS @` record** (the `alpn=...` SVCB
-   one — it interferes with cert issuance). Leave email TXT (`_dmarc`,
-   `_domainkey`, SPF) and `_domainconnect` alone.
-3. Add the Vercel records:
+**Rule:** *never* import `lib/db.ts` from a client component — it would pull the
+multi-MB generated JSON into the browser bundle. Detail pages that can be fully
+enumerated are **SSG** (`generateStaticParams` + server `db`); pages that need
+client-side filtering/charting over the whole player set fetch the **trimmed**
+client JSON via the `useJson` hooks.
 
-   | Type  | Name | Value |
-   |-------|------|-------|
-   | `A`     | `@`  | `76.76.21.21` |
-   | `CNAME` | `www`| `cname.vercel-dns.com` |
+`client.ts` shape — a module-level cache + in-flight de-dupe so navigating
+between client pages never refetches, and SSR renders a skeleton:
 
-   (Read the exact values back from `vercel domains add` — Vercel can hand out a
-   project-specific apex A record.)
-4. Don't change nameservers (keep Squarespace's) if you're using the A/CNAME
-   method.
-5. **HTTPS auto-issues after DNS verifies** — the TLS handshake will fail for a
-   few minutes (up to ~30) in the meantime; that's normal, not a misconfig.
+```ts
+const cache: Record<string, any> = {};
+const inflight: Record<string, Promise<any>> = {};
+const V = process.env.NEXT_PUBLIC_DATA_VERSION || "1";
+function useJson<T>(url: string): T | null {
+  const [data, setData] = useState<T | null>(cache[url] ?? null);
+  useEffect(() => {
+    if (cache[url]) return setData(cache[url]);
+    inflight[url] ??= fetch(`${url}?v=${V}`, { cache: "force-cache" }).then(r => r.json()).then(d => (cache[url] = d));
+    let alive = true; inflight[url].then(d => alive && setData(d));
+    return () => { alive = false; };
+  }, [url]);
+  return data;
+}
+export const usePlayers = () => useJson<CPlayer[]>("/data/players.json");  // + useTeams/useLeagues/useFixtures
+```
 
-**The "still under construction" trap.** After correct DNS, the owner's browser
-showed Squarespace's parking page — stale local DNS, not a real problem. Confirm
-with `nslookup domain 8.8.8.8` (should be `76.76.21.21`) and
-`curl -sI https://domain` (should be `server: Vercel`, your `<title>`); then
-`ipconfig /flushdns`, hard-refresh, or test on mobile data.
+The client types (`CPlayer`, `CTeam`, …) use **short keys** (`n`, `ts`, `tiv`, `min`)
+to shrink the wire payload; the generator writes them, the client hooks consume
+them. The full types in `lib/types.ts` are the server-side canonical shapes.
 
 ---
 
-## 13. Owner's working style & preferences
+## 5. Data model & generation pipeline
 
-Bake these into any judgment call so you don't have to ask:
+Everything is produced at build time by `scripts/generate.mjs` (wired into
+`predev` and `build`, so the datasets are always fresh before dev/build). It
+emits **both** tiers: full JSON into `src/data/generated/` and trimmed JSON into
+`public/data/`.
 
-- **Always `git push` after committing.** Solo, continuously-deployed project —
-  commit to `main` and push; pushing triggers the Vercel deploy. No PR ceremony
-  unless asked. (Also in `CLAUDE.md`.)
-- **Aesthetic: clean, minimal, modern, "super clean".** Glass + warm paper +
-  pills. Generous whitespace and radii. Layout that *mirrors structure* (e.g.
-  header aligned to the cards) delights them.
-- **Icons: lucide only. NO EMOJIS in the UI.** Convey state with icon swaps +
-  color, not emoji.
-- **Fonts: artsy / minimal / modern** for brand type (Syne et al.).
-- **Speed matters: "never wait."** Perceived performance (blur-up, seeds,
-  preloading) is a feature they explicitly value.
-- **They like gamification & data:** Elo, trends, streaks, diplomas,
-  charts-over-time. Lean into tasteful stats.
-- **Iterative & trusting: "try it."** Make a tasteful default choice and ship it
-  rather than asking many questions; they'll react and refine. When you do make
-  a removal/trade-off (e.g. dropping the Acc pill), state it plainly and offer to
-  revert.
-- **Per-device persistence is fine to start; design for accounts later.** Keep
-  storage behind a thin `load/save` boundary.
+**Sources** (cached raw under `scripts/cache/`, committed so builds are
+reproducible offline):
+- **openfootball** (public domain) → real Eliteserien + OBOS results, tables,
+  and 2023–2025 history.
+- **TheSportsDB** → live 2026 fixtures/standings + club crests/metadata.
+- **Wikidata / Wikipedia** → logos and supplementary club facts.
+
+**Real vs modeled (the contract):**
+- League **results and tables** for Eliteserien/OBOS are **real**, taken verbatim
+  from openfootball.
+- The **player layer** (squads, minutes, on-pitch +/−, cards, Team Impact) and
+  the **lower/women's divisions** are **modeled** with a *seeded* PRNG
+  (`scripts/lib/prng.mjs`, fixed seed `20260601`) so generation is deterministic
+  and reproducible.
+- Crucially, the modeled player layer for real leagues is **anchored to the real
+  scoreline** — real goals are distributed across modeled scorers/minutes — so
+  every team result and final table stays exactly real even though the
+  player-level detail is synthetic.
+
+**Team Impact** is the headline modeled metric: a standardized on-pitch
+goal-difference contribution (an Elo/plus-minus flavour), computed in
+`scripts/lib/metrics.mjs` (`computeTeamImpact`) and surfaced with tier labels
+(`teamImpactTier`: "Svært verdifull" → "Svak") and tones in `lib/metrics.ts`.
+Only "qualified" players (enough minutes; `q === 1`) get a value.
+
+**Canonical types** live in `lib/types.ts` — `League`, `Team`, `Player`,
+`Fixture`, `MatchDetail` (events + lineups), `Transfer`, `HistorySeason`,
+`Meta`. Each carries a `dataSource: "real" | "modeled"` so any view can render
+the honest badge.
+
+For a new season/source: refresh the cache via the `fetch-*.mjs` scripts, bump
+`SEASON`/`SEASON_LABEL` in `generate.mjs`, regenerate. `meta.generatedAt` then
+changes, which auto-busts the client cache (§7).
+
+---
+
+## 6. Performance playbook
+
+The app is built to be **mostly static and never block on data it doesn't need.**
+
+1. **Static generation everywhere it's possible.** `npm run build` prerenders
+   ~650 pages: all leagues, ~165 teams, ~370 players, ~90 matches as static HTML
+   (`generateStaticParams` + the server `db`). First Load JS is ~88 kB shared;
+   route bundles land ~96–120 kB. Keep it there — watch the build's per-route
+   size table after every change.
+2. **recharts is lazy, always.** It is *only* imported through
+   `charts-lazy.tsx`, which wraps each chart in `next/dynamic(…, { ssr:false,
+   loading: <Skeleton/> })`. recharts never enters a first load; a chart pulls
+   its own chunk when it mounts. **Never import `components/charts.tsx`
+   directly** from a page — go through `charts-lazy.tsx`.
+3. **Dependency-free viz for the cheap stuff.** Inline distributions, heatmaps,
+   sparklines and diverging bars are pure SVG/CSS in `dataviz.tsx` — no chart lib
+   cost for things that don't need one.
+4. **Trimmed client payloads + module cache.** Client pages fetch short-keyed
+   JSON once; the module-level cache in `client.ts` means switching between
+   Analyse/Utforsk/Spillere reuses the same in-memory array (no refetch, no
+   re-parse).
+5. **Charts don't animate on data they re-render often** (`isAnimationActive={false}`
+   on bars/histograms) — avoids re-animation jank when filters change.
+6. **Compositor-friendly backdrop** (§3.5) — fixed pseudo-element, not
+   `background-attachment: fixed`.
+7. **`optimizePackageImports: ["lucide-react", "date-fns"]`** in `next.config`
+   so icon/date imports tree-shake to just what's used.
+8. **Debounced filters.** Text and range inputs feed `useDebounced(...)` before
+   driving the big `useMemo` filter/sort passes, so typing stays smooth over
+   thousands of players. Big derived lists are always `useMemo`'d and capped
+   (e.g. the Spillere table renders at most 400 rows).
+
+---
+
+## 7. Caching & versioning
+
+`public/data/*.json` is **content-versioned and cached forever**:
+
+```js
+// next.config.mjs
+async headers() {
+  return [{ source: "/data/:path*", headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }] }];
+}
+// DATA_VERSION is derived from meta.generatedAt and exposed as NEXT_PUBLIC_DATA_VERSION
+```
+
+Client fetches hit a **versioned URL** (`/data/players.json?v=<DATA_VERSION>`)
+with `cache: "force-cache"`. The bytes at a given versioned URL never change → it
+can cache forever; regenerating the data changes `meta.generatedAt` → a new `?v=`
+→ a fresh URL that misses the old cache. Repeat visits skip the network entirely.
+`DATA_VERSION` is computed once in `next.config.mjs` from `public/data/meta.json`
+and injected via `env`. The command palette and every `useJson` use the same `?v=`.
+
+---
+
+## 8. Data honesty (the core promise)
+
+This is non-negotiable and shapes the UI:
+
+- Every league/team/player/fixture carries `dataSource: "real" | "modeled"`.
+- The **`<DataBadge source=… />`** primitive renders a green "ekte data" badge or
+  an amber "modellert" badge with an explanatory `title`. It appears on cards,
+  page headers, and league/match views.
+- Pages whose numbers are modeled show a `Badge tone="low"` ("Modellert") in the
+  header (Spillere, Utforsk, Analyse, scorer/impact lists).
+- The home page and `/om` (about/method) page state plainly which leagues are
+  real and that the player layer is modeled-but-anchored.
+- **Never** present a modeled value styled identically to a real one. When in
+  doubt, label it. (The owner cares about this more than almost anything — see
+  the `data-honesty` memory.)
+
+---
+
+## 9. Gender & theme systems
+
+**Gender (men/women)** is a global content switch, not a route:
+- Stored in a `kd-gender` cookie (so Server Components read it via `lib/gender.ts`
+  `getGender()`) *and* mirrored to `localStorage`.
+- `GenderToggle` writes both, dispatches a `kd-gender` CustomEvent (so live
+  client components update without a reload), then `router.refresh()` inside a
+  `useTransition` to re-render server components for the new gender.
+- Client components subscribe via `useGender()` (reads the cookie, listens for
+  the event).
+
+**Theme (dark/light)**, default **light** (warm paper):
+- A tiny **inline script in `<head>`** (`layout.tsx`) reads `localStorage["kd-theme"]`
+  and toggles `.dark` on `<html>` *before paint* — no flash of wrong theme.
+- `ThemeToggle` flips the class + persists to `localStorage`. `<html
+  suppressHydrationWarning>` because the class is set pre-hydration.
+- All colour flows through the HSL variables (§3.2), so toggling one class
+  reskins the entire app including charts (which read `hsl(var(--chart-n))`).
+
+---
+
+## 10. Pitfalls & hard-won lessons
+
+- **Server vs client data layer.** Importing `lib/db.ts` (or anything from
+  `src/data/generated/`) into a `"use client"` component ships multi-MB JSON to
+  the browser. Client components must use `lib/client.ts` hooks. Keep the
+  `db.ts` header comment ("only import from Server Components").
+- **`background-attachment: fixed` jank.** It repaints the whole page per scroll
+  frame. Use a fixed `body::before` layer (§3.5).
+- **recharts in the first load.** Importing `components/charts.tsx` directly
+  defeats the lazy split. Always go through `charts-lazy.tsx`.
+- **Non-unique React keys in viz.** Row labels can legitimately repeat (same club
+  short name across divisions); keying a `BoxPlot`/list row by `name` alone
+  corrupts reconciliation (stale rows). Key by `${name}-${i}`.
+- **No hardcoded base year for age.** Ages must derive from the data/season, not
+  a literal like `2024 - birthYear` — the season rolls over and the label silently
+  drifts. Read `age` straight off the record (it's computed in the pipeline) or
+  off `meta.season`.
+- **No raw glyph icons.** `★`, `▲`, `▼` etc. render inconsistently and break the
+  "lucide-only, no emoji" rule. Use a lucide component (`Star`, `ChevronUp/Down`)
+  so size/weight/colour are controllable.
+- **`next lint` / type errors don't block the build** (`eslint.ignoreDuringBuilds`,
+  `typescript.ignoreBuildErrors`) — that's deliberate so a deploy never wedges on
+  a squiggle, but it means **you** must validate with `npx tsc --noEmit` +
+  `npm run build` before claiming done (§14).
+- **Locale matters.** Sort Norwegian strings with `localeCompare(a, b, "nb")` and
+  format numbers/dates with `Intl.*` + `nb-NO`, or `æ/ø/å` and thousands
+  separators come out wrong.
+- **Windows line-endings.** Git warns `LF will be replaced by CRLF`; harmless.
+
+---
+
+## 11. Deployment
+
+Connect the GitHub repo to a Vercel project once; thereafter **pushing `main`
+auto-deploys** (the owner's default workflow — commit to `main` and push, no PR
+ceremony unless asked). `build` runs `generate.mjs` first, so the deployed
+datasets are regenerated from the committed source cache on every build. Manual
+deploy: `npx vercel --prod`. Custom domains follow the standard Vercel
+`A @ 76.76.21.21` + `CNAME www cname.vercel-dns.com` setup.
+
+---
+
+## 12. Owner's working style & preferences
+
+Bake these in so you don't have to ask (mirrors the saved memories):
+
+- **Always `git push` after committing.** Solo, continuously-deployed project on
+  `main`; pushing triggers the Vercel deploy.
+- **Aesthetic: clean, minimal, modern.** Warm-paper glass + pills, generous
+  whitespace and radii, layout that mirrors structure.
+- **Icons: lucide only. NO EMOJIS, no raw glyph icons.** Convey state with icon
+  swaps + tone colour.
+- **Fonts: artsy / minimal / modern** for display type (Syne et al.).
+- **Speed matters: "never wait."** Static generation, immutable-cached data,
+  lazy charts are features they value.
+- **Data honesty is sacred.** Real data only; label anything modeled; never fake
+  modeled-as-real.
+- **They like data & tasteful stats:** distributions, box plots, scatter labs,
+  cross-tabs, Team Impact, age analytics. Lean into it.
+- **Iterative & trusting: "try it."** Make a tasteful default and ship rather than
+  asking many questions; state any trade-off plainly and offer to revert.
 - **Validate before claiming done:** `npx tsc --noEmit` + `npm run build`. Report
   honestly if something failed.
-- **Commit messages:** imperative subject, a short bulleted body of what/why,
-  trailer `Co-Authored-By: Claude …`.
 
 ---
 
-## 14. Re-skinning checklist for a new topic
+## 13. Re-skinning checklist (new league / sport)
 
-1. Write `scripts/fetch-*.mjs` to produce `public/data.json` as `Item[]`, sorted
-   by your notability metric. Keep ids stable. Keep/adapt `derive-popular.mjs`
-   for the instant-load seed. **Bump `DATA_VERSION`.**
-2. Update the `Item` type + `CATEGORIES` + the `modeTarget(item, mode)` map for
-   your facets. Everything downstream (pool filtering, choice building, Elo
-   difficulty, picker) is generic.
-3. Replace the prompt rendering (here an `<img>`) with whatever your question is —
-   text, audio, a flag, a map. Keep the blur-up + responsive-image stack if it's
-   images. The 4-pill answer UI stays.
-4. Rename brand/metadata/wordmark/favicon. Keep the glass/pill CSS verbatim.
-5. Wire the cache headers in `next.config.mjs` for your data file(s).
-6. Add the custom domain per §12. `git push` to deploy.
-
-The framework is topic-agnostic; the personality is §3–§4, the speed is §6–§7,
-and the don't-trip-here is §11.
+1. Replace the `fetch-*.mjs` scripts + `scripts/cache/` to produce your raw
+   sources; update `scripts/lib/sources.mjs` (clubs, cities, name pools) and
+   `metrics.mjs` (your headline metric) and `generate.mjs` (`SEASON`, league
+   defs). Keep the seeded PRNG for any modeled layer; keep the
+   real-vs-modeled `dataSource` flag on everything.
+2. Keep the **two-tier data architecture** (§4) verbatim: full JSON →
+   `src/data/generated/` for server pages, trimmed short-keyed JSON →
+   `public/data/` for client hooks.
+3. Update `lib/types.ts` + the client `C*` short-key types + the `db.ts`/`client.ts`
+   accessors for your entities. Everything downstream (filters, charts, badges)
+   is generic.
+4. Keep the **design system** (§3) and the **`ui/` control kit** as-is; restyle
+   only the tokens if you want a different palette. Keep `DataBadge` and the
+   honesty rules.
+5. Rename brand/wordmark/metadata/favicon and the nav (`lib/nav.ts`).
+6. Wire `next.config.mjs` cache headers for your `public/data` files; confirm
+   `DATA_VERSION` derives from your `meta.generatedAt`.
+7. `git push` to deploy.
 
 ---
 
-## 15. Quick-reference cheatsheet
+## 14. Quick-reference cheatsheet
 
 | Need | Do this |
 |------|---------|
-| Validate a change | `npx tsc --noEmit` && `npm run build` (not `next lint`) |
-| Refresh data | `npm run fetch:paintings`, then bump `DATA_VERSION` |
-| New device-local pref | versioned `localStorage` key, SSR-safe `load()`, hydrate in mount effect |
-| Cache a static asset hard | `immutable` header in `next.config` + `?v=` URL |
-| Responsive image | `imageSrcSet()` + a `sizes`; preload with the *same* srcset/sizes |
-| Never-blank image | 64px blur-up placeholder behind, fade real image in on load |
-| Image ready state | derive from loaded id + `ref` `el.complete`; don't reset a bool in an effect |
-| lucide image icon | `import { Image as ImageIcon }` (don't shadow `new Image()`) |
-| Draggable + clickable strip | capture pointer lazily past a move threshold; `moved` flag suppresses click |
-| Keep header from reflowing | `shrink-0` everywhere; fixed widths + `fitLabel` for variable pills |
-| Header ↔ cards alignment | left `flex-1`, right `md:w-[300px] md:justify-between`, shared `gap-3` |
-| Mobile overflow of controls | `overflow-x-auto no-scrollbar` (+ `-my-1 py-1`) |
+| Validate a change | `npx tsc --noEmit` && `npm run build` (the build also regenerates data) |
+| Regenerate datasets | `npm run generate` (auto-runs on `predev`/`build`) |
+| Refresh from sources | `node scripts/fetch-real.mjs` / `fetch-2026.mjs` / `fetch-logos.mjs`, then `npm run generate` |
+| Add data to a **server** page | import accessors from `@/lib/db` (never from a client component) |
+| Add data to a **client** page | `usePlayers()/useTeams()/useLeagues()/useFixtures()` from `@/lib/client` |
+| Add a chart | import from `@/components/charts-lazy` (never `charts.tsx` directly) |
+| Cheap inline viz | `@/components/dataviz` (BoxPlot/Heatmap/MiniHist/DivergeBar/SegBar) |
+| New control | reuse `@/components/ui/controls` (Select/Segmented/SortHeader/Collapsible/Toggle) |
+| Theme-aware colour | `hsl(var(--token))` / Tailwind semantic utility — never a hex literal |
+| Label data provenance | `<DataBadge source={...} />` or `Badge tone="low"` for modeled |
+| Cache a static dataset hard | immutable header in `next.config` + `?v=${NEXT_PUBLIC_DATA_VERSION}` |
+| Sort/format Norwegian | `localeCompare(a,b,"nb")`; `fmt()/fmtDate()` from `@/lib/format` |
 | Deploy | `git push` (auto) or `npx vercel --prod` |
-| Squarespace→Vercel DNS | delete parking A/`www`/`HTTPS` records; add `A @ 76.76.21.21` + `CNAME www cname.vercel-dns.com` |
-| Diagnose "wrong site showing" | `nslookup domain 8.8.8.8`, `curl -sI https://domain`; then flush DNS |
+| Screenshot every route | `node scripts/shots.mjs` → `.shots/` |
+
+The framework is league-agnostic; the personality is §3, the speed is §6–§7, the
+promise is §8, and the don't-trip-here is §10.
